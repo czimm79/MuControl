@@ -10,6 +10,7 @@ Created by Coy Zimmermann
 - Collect key presses from the user that can then change the parameter values.
     - Consider putting phase/direction of field in paramter tree..
         - Maybe even get fancy with an arrow plot to show direction?
+- Get default values from a csv file, parse through a Configuration class. This will enable the user to set keybinds, set device ID, default frequency, amplitude, etc.
 - Write thread functions
     - nidaqmx reader
     - nidaqmx writer
