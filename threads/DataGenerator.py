@@ -1,18 +1,18 @@
 import numpy as np
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSlot
 
 class Generator(QtCore.QThread):
     ''' Class that generates data on demand.'''
     newData = QtCore.pyqtSignal(object) # Designates that this class will have an output signal 'newData'
 
-    def __init__(self, chunksize=100, delay=20, multi=10):
+    def __init__(self, multi, freq, chunksize=100, delay=20):
         super().__init__()
         self.chunksize = chunksize
         self.delay = delay
         self.multi = multi
-        self.mutex = QtCore.QMutex()
-        self.output = np.zeros([1,self.chunksize])
+        self.freq = freq
+        #self.mutex = QtCore.QMutex()
+        self.output = np.zeros([6,self.chunksize])
         self.running = False
 
     def run(self):
