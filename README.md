@@ -24,6 +24,10 @@ Created by Coy Zimmermann
     - I could try using register_every_n_samples_transferred_from_buffer_event that can count how many samples have been output, then once all of them are gone, supply more. (I THINK THIS IS THE WAY TO DO IT, based off of how MatLAB adds a listener a La : https://www.mathworks.com/help/daq/examples/generate-continuous-and-background-signals-using-ni-devices.html)
     - Look up the DAQWriteOffset error, wtf is happening there?
 
+- Continuing - I can follow this example https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019Mg6SAE&l=en-US
+    - Set nidaqmx.task.out_stream.regen_mode to this nidaqmx.constants.RegenerationMode.DONT_ALLOW_REGENERATION (https://nidaqmx-python.readthedocs.io/en/latest/constants.html)
+    - Experiment with when to push data to the buffer by setting ao_data_xfer_req_cond with nidaqmx.constants.OutputDataTransferCondition. Look on line 32.
+
 
 
 

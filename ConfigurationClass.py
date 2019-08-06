@@ -10,8 +10,8 @@ class Configuration():
         # Writing
         self.funcg_name = 'cDAQ1Mod1'
         self.writechannel_list = [0, 1, 2]
-        self.funcg_rate = 2000
-        self.writechunksize = 100
+        self.funcg_rate = 1000
+        self.writechunksize = 1000
         # ParamTree
         self.defaults = {
             'vmulti' : 1.0,
