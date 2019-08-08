@@ -69,7 +69,9 @@ class MyParamTree(ParameterTree):
         qtk.Key_Up : self.Key_Up,
         qtk.Key_Down : self.Key_Down,
         qtk.Key_G : self.Key_G,
-        qtk.Key_F : self.Key_F
+        qtk.Key_F : self.Key_F,
+        qtk.Key_V : self.Key_V,
+        qtk.Key_C : self.Key_C
         }
         func = func_map.get(key, lambda: 'Not bound yet')
         return func()
@@ -98,3 +100,11 @@ class MyParamTree(ParameterTree):
     def Key_F(self):
         print('F')
         self.stepParamValue('Frequency', -10)
+
+    def Key_V(self):
+        print('V')
+        self.stepParamValue('Field Camber', 10)
+
+    def Key_C(self):
+        print('C')
+        self.stepParamValue('Field Camber', -10)

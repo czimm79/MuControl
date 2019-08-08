@@ -7,10 +7,15 @@ import matplotlib.pyplot as plt
 
 config = Configuration()
 freq = config.defaults['freq']
-x = np.linspace(start=0, stop=2*np.pi*freq, num=config.writechunksize)
-y = np.array(
-    [np.sin(2*x),
-    np.sin(x)]
-    )
+t = np.linspace(0,2*np.pi,10)
+zcoeff = 0.653
+I = 2.1
+ζ = 0.1
+θ = 0.2
+output = np.array([
+    I*(np.sin(ζ)*np.cos(t) - np.sin(θ)*np.cos(ζ)*np.sin(t)), # x-coils
+    I*(np.cos(ζ)*np.cos(t) - np.sin(θ)*np.sin(ζ)*np.sin(t)), # y-coils
+    zcoeff*I*(np.cos(θ)*np.sin(t))                           # z-coils
+])
 
-plt.plot(x,y)
+print(output.shape)

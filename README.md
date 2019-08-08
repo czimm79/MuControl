@@ -27,7 +27,11 @@ Created by Coy Zimmermann
 - Continuing - I can follow this example https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z0000019Mg6SAE&l=en-US
     - Set nidaqmx.task.out_stream.regen_mode to this nidaqmx.constants.RegenerationMode.DONT_ALLOW_REGENERATION (https://nidaqmx-python.readthedocs.io/en/latest/constants.html)
     - Experiment with when to push data to the buffer by setting ao_data_xfer_req_cond with nidaqmx.constants.OutputDataTransferCondition. Look on line 32.
+        - ON_BOARD_MEMORY_EMPTY
+        - ON_BOARD_MEMORY_HALF_FULL_OR_LESS
+        - ON_BOARD_MEMORY_LESS_THAN_FULL
 
+-self.chan[i].ao_data_xfer_req_cond = nidaqmx.constants.OutputDataTransferCondition.ON_BOARD_MEMORY_HALF_FULL_OR_LESS
 
 
 
@@ -35,3 +39,7 @@ Created by Coy Zimmermann
 
 **Version 1.1**
 - Add a parametric plot of the signals to maybe see a circle in 3D. Would have to account for the zcoeff.
+
+
+**Tips**
+- To enable FFT in the app, modify fourier transform function and add a double division sign in the slices. Located in pyqtgraph/graphicsItems/PlotDataItem

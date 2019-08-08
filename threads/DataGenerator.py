@@ -18,6 +18,7 @@ class Generator(QtCore.QThread):
     def run(self):
         ''' This method runs when the thread is started.'''
         self.running = True
+        print('Got to the running')
         while self.running:
             try:
                 #self.mutex.lock()
