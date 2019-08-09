@@ -35,7 +35,7 @@ class MyWindow(QtGui.QMainWindow):
     def __init__(self):
         super().__init__()  # Inherit everything from QMainWindow
         self.ptr = 1  # Variable ptr belongs to 'self', AKA this class, AKA the main window
-        self.linewidth = 2
+        self.linewidth = 1
         self.curvecolors = ['b', 'g', 'r', 'c', 'y', 'm']
         self.pens = [pg.mkPen(i,width=self.linewidth) for i in self.curvecolors]
         self.set_style()
@@ -90,33 +90,33 @@ class MyWindow(QtGui.QMainWindow):
         """ Initialize the readThread and writeThread using configurations."""
         config = Configuration()
 
-        # Instantiate the readThread
-        self.readThread = SignalReader(
-            daq_name=config.daq_name,
-            readchannel_list=config.readchannel_list,
-            daq_rate=config.daq_rate,
-            chunksize=config.chunksize
-            ) # Instantiate the readThread
+        # # Instantiate the readThread
+        # self.readThread = SignalReader(
+        #     daq_name=config.daq_name,
+        #     readchannel_list=config.readchannel_list,
+        #     daq_rate=config.daq_rate,
+        #     readchunksize=config.readchunksize
+        #     ) # Instantiate the readThread
+        #
+        # self.readThread.newData.connect(self.on_new_data_update_plot) # Connect the data from the thread to my method
+        # self.readThread.start()
+        #
+        # # Instantiate the writeThread
+        # self.writeThread = SignalWriter(
+        #     funcg_name=config.funcg_name,
+        #     writechannel_list=config.writechannel_list,
+        #     funcg_rate=config.funcg_rate,
+        #     writechunksize=config.writechunksize,
+        #     zcoeff=config.zcoeff,
+        #     # Default wave values
+        #     vmulti=self.t.getParamValue('Voltage Multiplier'),
+        #     freq=self.t.getParamValue('Frequency'),
+        #     camber=self.t.getParamValue('Field Camber'),
+        #     zphase=self.t.getParamValue('Z-Phase'),
+        #     )
 
-        self.readThread.newData.connect(self.on_new_data_update_plot) # Connect the data from the thread to my method
-        self.readThread.start()
-
-        # Instantiate the writeThread
-        self.writeThread = SignalWriter(
-            funcg_name=config.funcg_name,
-            writechannel_list=config.writechannel_list,
-            funcg_rate=config.funcg_rate,
-            writechunksize=config.writechunksize,
-            zcoeff=config.zcoeff,
-            # Default wave values
-            vmulti=self.t.getParamValue('Voltage Multiplier'),
-            freq=self.t.getParamValue('Frequency'),
-            camber=self.t.getParamValue('Field Camber'),
-            zphase=self.t.getParamValue('Z-Phase'),
-            )
-
-        # self.writeThread = Generator(2, 10)
-        # self.writeThread.newData.connect(self.on_new_data_update_plot)
+        self.writeThread = Generator(2, 10)
+        self.writeThread.newData.connect(self.on_new_data_update_plot)
 
 
     def on_new_data_update_plot(self, incomingData):
