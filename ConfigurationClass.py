@@ -1,11 +1,17 @@
 import configparser
 import ast
 
+
 class Configuration:
-    """ Reads in all of the configurable constants from config.ini. """
-    def __init__(self):
+    """
+    Reads in all of the configurable constants from config.ini.
+
+    """
+    def __init__(self, appctxt):
         inifile = configparser.ConfigParser()  # Initialize the configparser
-        inifile.read('config.ini')  # read in the config.ini file
+        inifile_path = 'config.ini'
+        # inifile_path = appctxt.get_resource('config.ini')
+        inifile.read(inifile_path)  # read in the config.ini file
 
         # READ
         self.daq_name = ast.literal_eval(inifile['READ']['daq_name'])
@@ -33,6 +39,7 @@ class Configuration:
         self.zcoeff = float(inifile['DEFAULT SIGNAL VALUES']['zcoeff'])
 
 
+# For debugging purposes only
 if __name__ == '__main__':
-    config = Configuration()
+    config = Configuration(None)
     # var = config.daq_name

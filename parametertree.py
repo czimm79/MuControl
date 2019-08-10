@@ -7,13 +7,17 @@ from ConfigurationClass import Configuration
 
 
 class MyParamTree(ParameterTree):
-    paramChange = QtCore.pyqtSignal(object, object) # MyParamTree outputs a signal with param and changes.
+    paramChange = QtCore.pyqtSignal(object, object)  # MyParamTree outputs a signal with param and changes.
 
-    def __init__(self):
+    def __init__(self, config):
+        """
+        Initialize the parameter tree.
+
+        :param config: instantiated config object containing configuration values
+        """
         super().__init__()
-        self.configs = Configuration()
-        self.defaults = self.configs.defaults
-        self.params =[
+        self.defaults = config.defaults
+        self.params = [
             {'name': 'Signal Design Parameters', 'type': 'group', 'children': [
                 {'name': 'Toggle', 'type': 'bool', 'value': False, 'tip': "Toggle the output"},
                 {'name': 'Voltage Multiplier', 'type': 'float', 'value': self.defaults['vmulti'], 'step': 0.25},
@@ -21,17 +25,16 @@ class MyParamTree(ParameterTree):
                 {'name': 'Z-Phase', 'type': 'float', 'value': self.defaults['zphase'], 'step': 90},
                 {'name': 'Field Camber', 'type': 'int', 'value': self.defaults['camber'], 'step': 1, 'siPrefix': True, 'suffix': '°'}
             ]},
-            {'name' : 'Passive Output Signal Properties', 'type': 'group', 'children': [
-                {'name' : 'X-Voltage Amplitude', 'type': 'float', 'value': self.defaults['xvoltamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'},
-                {'name' : 'Y-Voltage Amplitude', 'type': 'float', 'value': self.defaults['yvoltamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'},
-                {'name' : 'Z-Voltage Amplitude', 'type': 'float', 'value': self.defaults['zvoltamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'}
+            {'name': 'Passive Output Signal Properties', 'type': 'group', 'children': [
+                {'name': 'X-Voltage Amplitude', 'type': 'float', 'value': self.defaults['calib_xamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'},
+                {'name': 'Y-Voltage Amplitude', 'type': 'float', 'value': self.defaults['calib_yamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'},
+                {'name': 'Z-Voltage Amplitude', 'type': 'float', 'value': self.defaults['calib_zamp'], 'step': 0.1, 'siPrefix': True, 'suffix': 'V'}
             ]}
         ]
 
         # Create my parameter object and link it to methods
         self.p = Parameter.create(name='self.params', type='group', children=self.params)
         self.setParameters(self.p, showTop=False)
-
 
 
         self.p.sigTreeStateChanged.connect(self.sendChange) # When the params change, send to method to emit.
@@ -59,19 +62,19 @@ class MyParamTree(ParameterTree):
 
 
     def on_key(self, key):
-        ''' On a keypress on the plot widget, forward the keypress to the correct function below.'''
+        """ On a keypress on the plot widget, forward the keypress to the correct function below."""
         qtk = QtCore.Qt
         # Its necessary to have this func map because the key is simply an integer I need to check against
         # the key dictionary in QtCore.Qt.
         func_map ={
-        qtk.Key_Left : self.Key_Left,
-        qtk.Key_Right : self.Key_Right,
-        qtk.Key_Up : self.Key_Up,
-        qtk.Key_Down : self.Key_Down,
-        qtk.Key_G : self.Key_G,
-        qtk.Key_F : self.Key_F,
-        qtk.Key_V : self.Key_V,
-        qtk.Key_C : self.Key_C
+            qtk.Key_Left: self.Key_Left,
+            qtk.Key_Right: self.Key_Right,
+            qtk.Key_Up: self.Key_Up,
+            qtk.Key_Down: self.Key_Down,
+            qtk.Key_G: self.Key_G,
+            qtk.Key_F: self.Key_F,
+            qtk.Key_V: self.Key_V,
+            qtk.Key_C: self.Key_C
         }
         func = func_map.get(key, lambda: 'Not bound yet')
         return func()
