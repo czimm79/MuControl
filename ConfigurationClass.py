@@ -34,9 +34,8 @@ class Configuration:
             'calib_xamp': float(inifile['DEFAULT SIGNAL VALUES']['calib_xamp']),
             'calib_yamp': float(inifile['DEFAULT SIGNAL VALUES']['calib_yamp']),
             'calib_zamp': float(inifile['DEFAULT SIGNAL VALUES']['calib_zamp']),
+            'zcoeff': float(inifile['DEFAULT SIGNAL VALUES']['zcoeff'])
             }
-
-        self.zcoeff = float(inifile['DEFAULT SIGNAL VALUES']['zcoeff'])
 
 
 # For debugging purposes only

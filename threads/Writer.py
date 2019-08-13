@@ -25,9 +25,9 @@ class SignalWriter(QtCore.QThread):
 
         # Changing variables
         self.vmulti = vmulti
-        self.freq = freq # single integer
+        self.freq = freq  # single integer
         self.camber = camber
-        self.zphase = zphase # single integer
+        self.zphase = zphase  # single integer
 
         # pre-allocate an empty output array
         self.output = np.zeros([len(self.writechannel_list), self.writechunksize])

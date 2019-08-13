@@ -6,21 +6,21 @@ from nidaqmx.stream_readers import AnalogMultiChannelReader
 
 
 class SignalReader(QtCore.QThread):
-    ''' Thread that periodically reads the voltages output by the data aquisition card.'''
+    """ Thread that periodically reads the voltages output by the data aquisition card."""
 
     newData = QtCore.pyqtSignal(object) # Designates that this class will have an output signal 'newData'
 
-    def __init__(self, daq_name, readchannel_list, daq_rate, chunksize, delay=20):
+    def __init__(self, daq_name, readchannel_list, daq_rate, readchunksize, delay=20):
         super().__init__()
         self.daq_name = daq_name
         self.readchannel_list = readchannel_list
         self.daq_rate = daq_rate
-        self.chunksize = chunksize
-        self.output = np.zeros([len(self.readchannel_list),self.chunksize])
+        self.readchunksize = readchunksize
+        self.output = np.zeros([len(self.readchannel_list),self.readchunksize])
         self.running = False
 
     def run(self):
-        ''' This method runs when the thread is started.'''
+        """ This method runs when the thread is started."""
         self.running = True
         with nidaqmx.Task() as readTask:
             #Add input channels
@@ -40,7 +40,7 @@ class SignalReader(QtCore.QThread):
             while self.running:
                 try:
                     reader.read_many_sample(data = self.output,
-                                        number_of_samples_per_channel = self.chunksize)
+                                        number_of_samples_per_channel = self.readchunksize)
                     self.output = np.around(self.output, 4)
                     self.newData.emit(self.output)
                 except Exception as e:
