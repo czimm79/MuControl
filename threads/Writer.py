@@ -2,17 +2,21 @@ import numpy as np
 from pyqtgraph.Qt import QtCore
 import nidaqmx
 from nidaqmx.stream_writers import AnalogMultiChannelWriter
-from misc_functions import generate_waves, generate_calib_waves
+from misc_functions import generate_waves, generate_calib_waves, find_ni_devices
+
 
 class SignalWriter(QtCore.QThread):
-    '''
+    """
     Thread that outputs signals to the function generator according to parameters.
     Keep in mind that the __init__ method only runs once to establish properties and default values.
-    '''
+    """
+    errorMessage = QtCore.pyqtSignal(object)
+
     def __init__(self,
-        funcg_name, writechannel_list,  # Inherent parameters of the funcg
-        funcg_rate, writechunksize, zcoeff,  # Parameters that influence the resolution and rate, and zcoeff
-        vmulti, freq, camber, zphase   # Signal Design Parameters
+                 funcg_name, writechannel_list,  # Inherent parameters of the funcg
+                 funcg_rate, writechunksize, zcoeff,  # Parameters that influence the resolution and rate, and zcoeff
+                 vmulti, freq, camber, zphase,   # Signal Design Parameters
+                 calib_xamp, calib_yamp, calib_zamp  # Calibration parameters
     ):
         super().__init__()  # Inherit properties of a QThread
 
@@ -28,7 +32,12 @@ class SignalWriter(QtCore.QThread):
         self.freq = freq  # single integer
         self.camber = camber
         self.zphase = zphase  # single integer
+
+        # Calibration variables
         self.calib_mode = False  # variable to store whether in calibration mode
+        self.calib_xamp = calib_xamp
+        self.calib_yamp = calib_yamp
+        self.calib_zamp = calib_zamp
 
         # pre-allocate an empty output array
         self.output = np.zeros([len(self.writechannel_list), self.writechunksize])
@@ -40,15 +49,20 @@ class SignalWriter(QtCore.QThread):
         self.writeTask = nidaqmx.Task()  # Start the task
 
         # Add input channels
-        for i in self.writechannel_list:
+        for index, i in enumerate(self.writechannel_list):
             channel_string = self.funcg_name + '/' + f'ao{i}'
-            self.writeTask.ao_channels.add_ao_voltage_chan(channel_string) # RSE = Referenced Single Ended
+            try:
+                self.writeTask.ao_channels.add_ao_voltage_chan(channel_string) # RSE = Referenced Single Ended
+            except Exception as e:
+                if index == 0:
+                    self.errorMessage.emit('Could not open write channels. Are device names correct?'
+                                           f" Devices connected: {find_ni_devices()}")
 
         # Set the generation rate, and buffer size.
         self.writeTask.timing.cfg_samp_clk_timing(
             rate = self.funcg_rate,
             sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS) # Set the rate in which the instrument collects data
-            #samps_per_chan = 800) # This is the buffer size
+
 
         # Set more properties
         self.writeTask.out_stream.regen_mode = nidaqmx.constants.RegenerationMode.DONT_ALLOW_REGENERATION
@@ -74,9 +88,9 @@ class SignalWriter(QtCore.QThread):
             self.output = generate_calib_waves(
                 funcg_rate=self.funcg_rate,
                 writechunksize=self.writechunksize,
-                calib_xamp=1,
-                calib_yamp=1,
-                calib_zamp=1
+                calib_xamp=self.calib_xamp,
+                calib_yamp=self.calib_yamp,
+                calib_zamp=self.calib_zamp
             )
 
         # Write the first set of data into the output buffer
@@ -100,9 +114,9 @@ class SignalWriter(QtCore.QThread):
             self.output = generate_calib_waves(
                 funcg_rate=self.funcg_rate,
                 writechunksize=self.writechunksize,
-                calib_xamp=1,
-                calib_yamp=1,
-                calib_zamp=1
+                calib_xamp=self.calib_xamp,
+                calib_yamp=self.calib_yamp,
+                calib_zamp=self.calib_zamp
             )
 
         self.writer.write_many_sample(data=self.output)

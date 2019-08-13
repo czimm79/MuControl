@@ -90,10 +90,10 @@ class MyParamTree(ParameterTree):
         self.setParamValue('Z-Phase', 270)
 
     def Key_Up(self):
-        self.setParamValue('Z-Phase', 180)
+        self.setParamValue('Z-Phase', 0)
 
     def Key_Down(self):
-        self.setParamValue('Z-Phase', 90)
+        self.setParamValue('Z-Phase', 180)
 
     def Key_G(self):
         self.stepParamValue('Frequency', 10)
@@ -118,3 +118,28 @@ class MyParamTree(ParameterTree):
         curbool = self.getParamValue('Toggle Output')
         setbool = not curbool
         self.setParamValue('Toggle Output', setbool)
+
+    def on_gamepad_event(self, gamepadEvent):
+        """
+        Parses the incoming gamepad events and forwards it to the appropriate keybind function below.
+        For ease and less repetition, some buttons are forwarded to the keyboard functions.
+        Args:
+            gamepadEvent (list): incoming list from the controller class of format ['button', val]. ex. ['LJOY', 45]
+        """
+        func_map = {
+            'BTN_WEST': self.Key_Q,
+            'BTN_NORTH': self.Key_W,
+            'BTN_EAST': self.Key_B,
+            'BTN_SOUTH': self.Key_V,
+            'LJOY': self.Joystick_Left
+        }
+        func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')
+        if gamepadEvent[0] == 'LJOY':
+            return func(gamepadEvent[1])
+        else:
+            return func()
+
+    def Joystick_Left(self, degree):
+        degree = 360 - degree  # convert joystick degrees to a zphase that makes sense
+        self.setParamValue('Z-Phase', degree)
+

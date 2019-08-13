@@ -1,5 +1,6 @@
 import numpy as np
-from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
+from pyqtgraph.Qt import QtCore
+
 
 class Generator(QtCore.QThread):
     """ Class that generates data on demand."""

@@ -8,8 +8,7 @@ from ParameterTree import MyParamTree
 from ConfigurationClass import Configuration
 from threads.Reader import SignalReader
 from threads.Writer import SignalWriter
-
-
+from threads.Controller import ControllerThread
 # Import statements for app installer packaging
 # from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
@@ -33,7 +32,6 @@ class MyWindow(QtGui.QMainWindow):
         self.initThreads(self.config)  # Initialize the threads using the configuration values
 
         self.p1.keyPressed.connect(self.t.on_key)  # Connect keyPresses to param tree
-
 
     def set_style(self):
         """ Simply set some config options and themes. """
@@ -84,24 +82,25 @@ class MyWindow(QtGui.QMainWindow):
         self.t = MyParamTree(self.config)
         self.t.paramChange.connect(self.change)
         # Add widgets to the layout in their proper positions
-        layout.addWidget(self.t, 2, 0, 1, 2)#, 1, 1)  # row, col, rowspan, colspan
-        layout.addWidget(self.p1, 0, 0)#, 1, 2)
+        layout.addWidget(self.t, 2, 0, 1, 2)  # , 1, 1)  # row, col, rowspan, colspan
+        layout.addWidget(self.p1, 0, 0)  # , 1, 2)
         layout.addWidget(self.lbl, 1, 0, 1, 3)
-        layout.addWidget(self.p2, 0, 1)#, 1, 2)
+        layout.addWidget(self.p2, 0, 1)  # , 1, 2)
 
     def initThreads(self, config):
         """ Initialize the readThread and writeThread using configurations."""
 
-
-        # Instantiate the readThread
+        # # Instantiate the readThread
         # self.readThread = SignalReader(
         #     daq_name=config.daq_name,
         #     readchannel_list=config.readchannel_list,
         #     daq_rate=config.daq_rate,
         #     readchunksize=config.readchunksize
-        #     ) # Instantiate the readThread
+        # )  # Instantiate the readThread
         #
-        # self.readThread.newData.connect(self.on_new_data_update_plot) # Connect the data from the thread to my method
+        # self.readThread.newData.connect(
+        #     self.p1.on_new_data_update_plot)  # Connect the data from the thread to my method
+        # self.readThread.errorMessage.connect(self.error_handling)
         # self.readThread.start()
         #
         # # Instantiate the writeThread
@@ -116,10 +115,17 @@ class MyWindow(QtGui.QMainWindow):
         #     freq=self.t.getParamValue('Frequency'),
         #     camber=self.t.getParamValue('Field Camber'),
         #     zphase=self.t.getParamValue('Z-Phase'),
-        #     )
+        #     calib_xamp=self.t.getParamValue('Calibration X-Voltage Ampl.', branch='Calibration'),
+        #     calib_yamp=self.t.getParamValue('Calibration Y-Voltage Ampl.', branch='Calibration'),
+        #     calib_zamp=self.t.getParamValue('Calibration Z-Voltage Ampl.', branch='Calibration'),
+        # )
+        # self.writeThread.errorMessage.connect(self.error_handling)
 
         self.writeThread = Generator(0.2, 10)
         self.writeThread.newData.connect(self.p1.on_new_data_update_plot)
+        self.gamepadThread = ControllerThread()
+        self.gamepadThread.newGamepadEvent.connect(self.t.on_gamepad_event)
+        self.gamepadThread.start()
 
     def change(self, param, changes):
         """Every time a change is made in the parameter tree, it comes here to be processed."""
@@ -153,6 +159,12 @@ class MyWindow(QtGui.QMainWindow):
                     self.writeThread.calib_mode = True
                 elif data == 'Normal':
                     self.writeThread.calib_mode = False
+            if path[1] == 'Calibration X-Voltage Ampl.':
+                self.writeThread.calib_xamp = data
+            if path[1] == 'Calibration Y-Voltage Ampl.':
+                self.writeThread.calib_yamp = data
+            if path[1] == 'Calibration Z-Voltage Ampl.':
+                self.writeThread.calib_zamp = data
 
     def toggle_writeThread(self, data):
         """When a checkbox is changed, it starts or stops the writeThread."""
@@ -160,8 +172,13 @@ class MyWindow(QtGui.QMainWindow):
             self.writeThread.start()
 
         elif data is False:
-            # self.writeThread.writeTask.close() # TODO: Uncomment this to add nidaqmx functionality
+            # self.writeThread.writeTask.close()
             self.writeThread.running = False
+
+    def error_handling(self, error_message):
+        error_box = QtWidgets.QErrorMessage()
+        error_box.showMessage(error_message)
+        error_box.exec_()
 
 
 if __name__ == '__main__':
@@ -174,4 +191,3 @@ if __name__ == '__main__':
     # exit_code = appctxt.app.exec_() # FBS : 2. Invoke appctxt.app.exec_()
     exit_code = app.exec_()
     sys.exit(exit_code)
-

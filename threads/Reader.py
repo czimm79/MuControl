@@ -2,13 +2,15 @@ import numpy as np
 from pyqtgraph.Qt import QtCore
 import nidaqmx
 from nidaqmx.stream_readers import AnalogMultiChannelReader
+from misc_functions import find_ni_devices
 
 
 
 class SignalReader(QtCore.QThread):
     """ Thread that periodically reads the voltages output by the data aquisition card."""
 
-    newData = QtCore.pyqtSignal(object) # Designates that this class will have an output signal 'newData'
+    newData = QtCore.pyqtSignal(object)  # Designates that this class will have an output signal 'newData'
+    errorMessage = QtCore.pyqtSignal(object)
 
     def __init__(self, daq_name, readchannel_list, daq_rate, readchunksize, delay=20):
         super().__init__()
@@ -23,16 +25,25 @@ class SignalReader(QtCore.QThread):
         """ This method runs when the thread is started."""
         self.running = True
         with nidaqmx.Task() as readTask:
-            #Add input channels
-            for i in self.readchannel_list:
-                channel_string = self.daq_name + '/' + i
-                readTask.ai_channels.add_ai_voltage_chan(channel_string,
-                terminal_config=nidaqmx.constants.TerminalConfiguration.RSE) # RSE = Referenced Single Ended
 
-            readTask.timing.cfg_samp_clk_timing(
-                rate = self.daq_rate,
-                sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS) # Set the rate in which the instrument collects data
-                #samps_per_chan = buffer)  # Since continuous, this number is the buffer size.
+            # Add input channels
+            for index, i in enumerate(self.readchannel_list):
+                channel_string = self.daq_name + '/' + i
+                try:
+                    readTask.ai_channels.add_ai_voltage_chan(channel_string,
+                        terminal_config=nidaqmx.constants.TerminalConfiguration.RSE) # RSE = Referenced Single Ended
+                except Exception as e:
+                    if index == 0:
+                        self.errorMessage.emit(
+                            "Couldn't initialize the read channels - is the read device name correct? "
+                            f'Devices connected: {find_ni_devices()}')
+            try:
+                readTask.timing.cfg_samp_clk_timing(
+                    rate = self.daq_rate,
+                    sample_mode = nidaqmx.constants.AcquisitionType.CONTINUOUS) # Set the rate in which the instrument collects data
+            except Exception as e:
+                self.errorMessage.emit("Couldn't start the read task - is the read device name correct? "
+                                   f'Devices connected: {find_ni_devices()}')
 
 
             reader = AnalogMultiChannelReader(readTask.in_stream)

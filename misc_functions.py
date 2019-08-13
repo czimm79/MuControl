@@ -1,4 +1,5 @@
 import numpy as np
+import nidaqmx
 
 
 def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
@@ -25,12 +26,12 @@ def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zco
 
     chunkspersec = funcg_rate // writechunksize  # Should be 10
 
-    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate//chunkspersec)
+    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
 
     output = np.array([
-        I*(np.sin(ζ)*np.cos(t) - np.sin(θ)*np.cos(ζ)*np.sin(t)),  # x-coils
-        I*(np.cos(ζ)*np.cos(t) - np.sin(θ)*np.sin(ζ)*np.sin(t)),  # y-coils
-        zcoeff*I*(np.cos(θ)*np.sin(t))                            # z-coils
+        I * (np.sin(ζ) * np.cos(t) - np.sin(θ) * np.cos(ζ) * np.sin(t)),  # x-coils
+        -I * (np.cos(ζ) * np.cos(t) + np.sin(θ) * np.sin(ζ) * np.sin(t)),  # y-coils
+        zcoeff * I * (np.cos(θ) * np.sin(t))  # z-coils
     ])
     return output
 
@@ -42,10 +43,41 @@ def generate_calib_waves(funcg_rate, writechunksize, calib_xamp, calib_yamp, cal
 
     chunkspersec = funcg_rate // writechunksize  # Should be 10
 
-    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate//chunkspersec)
+    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
     output = np.array([
-        np.cos(t),
-        np.cos(t + (np.pi / 2)),
-        np.cos(t + np.pi)
+        calib_xamp * np.cos(t),
+        calib_yamp * np.cos(t + (np.pi / 2)),
+        calib_zamp * np.cos(t + np.pi)
     ])
     return output
+
+
+def find_ni_devices():
+    system = nidaqmx.system.System.local()
+    dev_name_list = []
+    for device in system.devices:
+        assert device is not None
+        # device looks like "Device(name=cDAQ1Mod1)"
+        dev_name = str(device).replace(')', '').split('=')[1]
+        dev_name_list.append(dev_name)
+    return str(dev_name_list)
+
+
+def xy_to_cylindrical(x, y):
+    """
+    Convert the x and y coordinates from the joystick into degrees from 0 to 360.
+    Args:
+        x: x coordinate from joystick
+        y: y coordinate from joystick
+
+    Returns:
+        magnitude: magnitude of x,y vector
+        degrees: degrees from 0-360 starting from the positive y axis, clockwise
+    """
+
+    magnitude = np.around(np.linalg.norm((x, y)), 2)
+    degrees = np.degrees(np.arctan2(x, y))
+    degrees = degrees % 360  # Modulo division accounts for negative degree values pi to 2pi.
+    degrees = np.around(degrees, 0)  # Round to the nearest integer
+    return magnitude, degrees
+
