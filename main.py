@@ -121,8 +121,6 @@ class MyWindow(QtGui.QMainWindow):
         self.writeThread = Generator(0.2, 10)
         self.writeThread.newData.connect(self.p1.on_new_data_update_plot)
 
-
-
     def change(self, param, changes):
         """Every time a change is made in the parameter tree, it comes here to be processed."""
         for param, change, data in changes:
@@ -132,12 +130,10 @@ class MyWindow(QtGui.QMainWindow):
             if path[1] == 'Toggle Output':
                 self.toggle_writeThread(data)
             if path[1] == 'Voltage Multiplier':
-                self.writeThread.vmulti = data  # TODO: Change ylims depending on vmulti
+                self.writeThread.vmulti = data
                 self.p1.setYRange(-data, data)
                 self.p2.vmulti = data
                 self.p2.plot_data()
-                # self.vmulti = self.t.getParamValue('Voltage Multiplier')
-
             if path[1] == 'Frequency':
                 self.writeThread.freq = data
                 self.p2.freq = data
@@ -152,6 +148,11 @@ class MyWindow(QtGui.QMainWindow):
                 self.p2.plot_data()
             if path[1] == 'Z-Coefficient':
                 self.writeThread.zcoeff = data
+            if path[1] == 'Output Mode':
+                if data == 'Calibration':
+                    self.writeThread.calib_mode = True
+                elif data == 'Normal':
+                    self.writeThread.calib_mode = False
 
     def toggle_writeThread(self, data):
         """When a checkbox is changed, it starts or stops the writeThread."""

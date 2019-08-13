@@ -25,7 +25,7 @@ def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zco
 
     chunkspersec = funcg_rate // writechunksize  # Should be 10
 
-    t = np.linspace(start=0, stop=ω/chunkspersec, num=funcg_rate//chunkspersec)
+    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate//chunkspersec)
 
     output = np.array([
         I*(np.sin(ζ)*np.cos(t) - np.sin(θ)*np.cos(ζ)*np.sin(t)),  # x-coils
@@ -35,22 +35,17 @@ def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zco
     return output
 
 
-# # Code block for testing
-# if __name__ == '__main__':
-#     from ConfigurationClass import Configuration
-#     import matplotlib.pyplot as plt
-#     config = Configuration()
-#     testout = generate_waves(
-#         config.writechunksize,
-#         config.funcg_rate,
-#         config.defaults['vmulti'],
-#         config.defaults['freq'],
-#         config.defaults['camber'],
-#         config.defaults['zphase'],
-#         config.zcoeff
-#     )
-#     print(len(testout[0]))
-#     plt.plot(t, testout[0])
-#     plt.plot(t, testout[1])
-#     plt.plot(t, testout[2])
-#     plt.show()
+def generate_calib_waves(funcg_rate, writechunksize, calib_xamp, calib_yamp, calib_zamp, f=20):
+    """ Generate three sin waves for calibration at 20Hz, 90 degrees out of phase from all."""
+
+    ω = 2 * np.pi * f
+
+    chunkspersec = funcg_rate // writechunksize  # Should be 10
+
+    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate//chunkspersec)
+    output = np.array([
+        np.cos(t),
+        np.cos(t + (np.pi / 2)),
+        np.cos(t + np.pi)
+    ])
+    return output
