@@ -5,6 +5,7 @@ from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
 import sys
 from threads.DataGenerator import Generator
 from ParameterTree import MyParamTree
+from settings import SettingsWindow
 from ConfigurationClass import Configuration
 from threads.Reader import SignalReader
 from threads.Writer import SignalWriter
@@ -41,10 +42,29 @@ class MyWindow(QtGui.QMainWindow):
 
     def initUI(self):
         """ Create all the widgets and place them in a layout """
-        self.setWindowTitle('MuControl v0.5.0')
-        # self.setWindowIcon(QtGui.QIcon(os.getcwd() + os.sep + 'static' + os.sep + 'icon.png'))
+        # General window properties
+        self.setWindowTitle('MuControl v0.9.5')
         self.resize(1600, 900)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
+
+        # Make menu bar at the top of the window
+        mainMenu = self.menuBar()
+        # mainMenu.setStyleSheet("""QMenuBar { background-color: #F0F0F0; }""")
+
+        fileMenu = mainMenu.addMenu('File')
+
+        # Settings button
+        settingsButton = QtGui.QAction("&Settings", self)
+        settingsButton.setShortcut('Ctrl+Alt+S')
+        self.dialog = SettingsWindow()
+        settingsButton.triggered.connect(self.dialog.show)
+        fileMenu.addAction(settingsButton)
+
+        # Exit Button
+        exitButton = QtWidgets.QAction('Exit', self)
+        exitButton.setShortcut('Ctrl+Q')
+        exitButton.triggered.connect(self.close)
+        fileMenu.addAction(exitButton)
 
         # Create a main box to hold everything
         self.mainbox = QtGui.QWidget()
@@ -68,15 +88,23 @@ class MyWindow(QtGui.QMainWindow):
         self.p2.setSizePolicy(self.p1.sizePolicy())
         # self.p1.enableAutoRange('xy', False)
 
-        # Create a label
-        self.lbl = QtWidgets.QLabel(
+        # Create control labels
+        self.keyboardlbl = QtWidgets.QLabel(
             '<h3> Keyboard Controls </h3>\
             <span style="font-size: 10pt;">To enable keyboard controls, left click once anywhere on the signal plot. </span> \
             <p> <strong> Toggle Output:  </strong> T; <strong> +Voltage Multiplier: </strong> W; <strong> -Voltage Multiplier: </strong> Q </p> \
             <p> <strong> +Frequency: </strong> G, <strong> -Frequency: </strong> F; <strong> +Camber: </strong> B; \
             <strong> -Camber: </strong> V </p>'
         )
-        self.lbl.setFont(QtGui.QFont("Default", 11))
+        self.gamepadlbl = QtWidgets.QLabel(
+            '<h3> Gamepad Controls </h3>\
+            <span style="font-size: 10pt;">To enable gamepad controls, plug in the controller before starting the program. </span> \
+            <p> <strong> Toggle Output:  </strong> Left Thumb Click; <strong> +Voltage Multiplier: </strong> RT; <strong> -Voltage Multiplier: </strong> LT </p> \
+            <p> <strong> +Frequency: </strong> Y, <strong> -Frequency: </strong> X; <strong> +Camber: </strong> B; \
+            <strong> -Camber: </strong> A </p>'
+        )
+        self.keyboardlbl.setFont(QtGui.QFont("Default", 11))
+        self.gamepadlbl.setFont(QtGui.QFont("Default", 11))
 
         # Create plot labels
         self.p1lbl = QtWidgets.QLabel('<b><u>Live Signal Plot</u></b>')
@@ -90,8 +118,10 @@ class MyWindow(QtGui.QMainWindow):
         layout.addWidget(self.p2lbl, 0, 1)
         layout.addWidget(self.t, 3, 0, 1, 2)  # , 1, 1)  # row, col, rowspan, colspan
         layout.addWidget(self.p1, 1, 0)  # , 1, 2)
-        layout.addWidget(self.lbl, 2, 0, 1, 3)
+        layout.addWidget(self.keyboardlbl, 2, 0, 1, 3)
+        layout.addWidget(self.gamepadlbl, 2, 1, 1, 3)
         layout.addWidget(self.p2, 1, 1)  # , 1, 2)
+        # layout.addWidget(settings_btn, 2, 1)
 
     def initThreads(self, config):
         """ Initialize the readThread and writeThread using configurations."""

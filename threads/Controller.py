@@ -24,7 +24,11 @@ class ControllerThread(QtCore.QThread):
         Emits:
             a list with the event code and state. ex. ['BTN_WEST', 1] or ['LJOY', 47.25]
         """
-        gamepad = devices.gamepads[0]
+        try:
+            gamepad = devices.gamepads[0]
+        except IndexError:
+            print('No controller connected.')
+            gamepad = None
         last_x = 0
         last_y = 0
         dead_zone = 10000
@@ -33,10 +37,10 @@ class ControllerThread(QtCore.QThread):
             while True:
                 events = gamepad.read()
                 event = events[0]
-                        # Buttons
+                # Buttons
                 if event.ev_type == 'Key':
                     if event.state == 1:
-                        # print(f'{event.code} was pressed once.')
+                        print(str(event.code))
                         self.newGamepadEvent.emit([str(event.code), event.state])
                         QtCore.QThread.msleep(10)
                 # Joystick
@@ -49,8 +53,5 @@ class ControllerThread(QtCore.QThread):
                     if magnitude > dead_zone:
                         self.newGamepadEvent.emit(['LJOY', degrees])
                         # QtCore.QThread.msleep(10)
-
-
-
 
 

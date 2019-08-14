@@ -87,7 +87,7 @@ class ThreeDPlot(gl.GLViewWidget):
             pass
         else:  # Continue along and plot
             self.last_update = now
-            print(time_elapsed)
+            # print(time_elapsed)
 
             if firstrun is not True:
                 for i, e in enumerate(self.last_lines):
