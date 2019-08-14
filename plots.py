@@ -72,35 +72,47 @@ class ThreeDPlot(gl.GLViewWidget):
             zcoeff=1)
 
         # Plot first circle
+        self.last_update = 0.1
         self.plot_data(firstrun=True)
 
     def plot_data(self, firstrun=False):  # TODO Figure out someway to not plot EVERY update to z-phase.
         """
         On a change in signal design properties, plot a new circle.
         """
-        if firstrun is not True:
-            for i, e in enumerate(self.last_lines):
-                self.removeItem(self.last_lines[i])
+        # Timing
+        now = pg.ptime.time()
+        time_elapsed = now - self.last_update
 
-        self.pts = generate_waves(
-            funcg_rate=self.funcg_rate,
-            writechunksize=self.writechunksize,
-            vmulti=self.vmulti,
-            freq=10,
-            camber=self.camber,
-            zphase=self.zphase,
-            zcoeff=1)
+        if time_elapsed < 0.07:  # Basically, if a bunch of changes are made fast, skip plotting
+            pass
+        else:  # Continue along and plot
+            self.last_update = now
+            print(time_elapsed)
 
-        # Plot 4 line segments, two of which are blue.
-        self.last_lines = []  # To clear previous lines when a new circle is plotted
-        self.colors = ['r', 'g', 'b', 'b']
-        pts_len = self.pts.shape[1]
-        n_segments = 4
-        j = pts_len // n_segments
-        for index, i in enumerate(np.arange(start=0, stop=pts_len, step=pts_len // n_segments)):
-            #  Plot separate color lines
-            j = i + j
-            line = gl.GLLinePlotItem(pos=self.pts[:, i:j].transpose(), color=pg.glColor(self.colors[index]),
-                                     width=5, antialias=True)
-            self.addItem(line)
-            self.last_lines.append(line)
+            if firstrun is not True:
+                for i, e in enumerate(self.last_lines):
+                    self.removeItem(self.last_lines[i])
+
+            self.pts = generate_waves(
+                funcg_rate=self.funcg_rate,
+                writechunksize=self.writechunksize,
+                vmulti=self.vmulti,
+                freq=10,
+                camber=self.camber,
+                zphase=self.zphase,
+                zcoeff=1)
+
+            # Plot 4 line segments, two of which are blue.
+            self.last_lines = []  # To clear previous lines when a new circle is plotted
+            self.colors = ['r', 'g', 'b', 'b']
+            pts_len = self.pts.shape[1]
+            n_segments = 4
+            j = pts_len // n_segments
+            for index, i in enumerate(np.arange(start=0, stop=pts_len, step=pts_len // n_segments)):
+                #  Plot separate color lines
+                j = i + j
+                line = gl.GLLinePlotItem(pos=self.pts[:, i:j].transpose(), color=pg.glColor(self.colors[index]),
+                                         width=5, antialias=True)
+                self.addItem(line)
+                self.last_lines.append(line)
+

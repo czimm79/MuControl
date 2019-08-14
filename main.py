@@ -78,14 +78,20 @@ class MyWindow(QtGui.QMainWindow):
         )
         self.lbl.setFont(QtGui.QFont("Default", 11))
 
+        # Create plot labels
+        self.p1lbl = QtWidgets.QLabel('<b><u>Live Signal Plot</u></b>')
+        self.p2lbl = QtWidgets.QLabel('<b><u>Parametrized Output Visualization</u></b>')
+
         # Parameter Tree
         self.t = MyParamTree(self.config)
         self.t.paramChange.connect(self.change)
         # Add widgets to the layout in their proper positions
-        layout.addWidget(self.t, 2, 0, 1, 2)  # , 1, 1)  # row, col, rowspan, colspan
-        layout.addWidget(self.p1, 0, 0)  # , 1, 2)
-        layout.addWidget(self.lbl, 1, 0, 1, 3)
-        layout.addWidget(self.p2, 0, 1)  # , 1, 2)
+        layout.addWidget(self.p1lbl, 0, 0)
+        layout.addWidget(self.p2lbl, 0, 1)
+        layout.addWidget(self.t, 3, 0, 1, 2)  # , 1, 1)  # row, col, rowspan, colspan
+        layout.addWidget(self.p1, 1, 0)  # , 1, 2)
+        layout.addWidget(self.lbl, 2, 0, 1, 3)
+        layout.addWidget(self.p2, 1, 1)  # , 1, 2)
 
     def initThreads(self, config):
         """ Initialize the readThread and writeThread using configurations."""
