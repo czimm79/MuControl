@@ -1,6 +1,6 @@
 import numpy as np
 import nidaqmx
-
+import pyqtgraph as pg
 
 def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
     """
@@ -81,3 +81,9 @@ def xy_to_cylindrical(x, y):
     degrees = np.around(degrees, 0)  # Round to the nearest integer
     return magnitude, degrees
 
+
+def set_style():
+    """ Simply set some config options and themes. """
+    pg.setConfigOption('background', 'w')
+    pg.setConfigOption('foreground', 'k')
+    pg.setConfigOptions(antialias=True)

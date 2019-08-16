@@ -1,49 +1,45 @@
-import numpy as np
+# Public Libraries
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui, QtWidgets
-
 import sys
+
+# Custom modules
 from threads.DataGenerator import Generator
 from ParameterTree import MyParamTree
 from settings import SettingsWindow
-from ConfigurationClass import Configuration
 from threads.Reader import SignalReader
 from threads.Writer import SignalWriter
 from threads.Controller import ControllerThread
-# Import statements for app installer packaging
-# from fbs_runtime.application_context.PyQt5 import ApplicationContext
-
-# Import plot classes
 from plots import SignalPlot, ThreeDPlot
+from misc_functions import set_style
+
+debug_mode = True  # Switch to either use NI threads or a random data generator.
+fbs_mode = False  # Switch to use either the PyQt5 app starting or the FBS container
 
 
 class MyWindow(QtGui.QMainWindow):
-    """
+    """ The main window of the application
     Setting up the main window. Anything with 'self' refers to the main window. This is the
     module that everything connects into.
     """
 
-    def __init__(self, appctxt):
-        super().__init__()  # Inherit everything from QMainWindow
-        self.ptr = 1  # Variable ptr belongs to 'self', AKA this class, AKA the main window
-        self.config = Configuration(appctxt)
+    def __init__(self):
+        super().__init__()  # Inherit everything from the Qt "QMainWindow" class
 
-        self.set_style()
+        self.config = SettingsWindow()  # Load in the settings module
+
+        set_style()
         self.initUI()
         self.initThreads(self.config)  # Initialize the threads using the configuration values
 
         self.p1.keyPressed.connect(self.t.on_key)  # Connect keyPresses to param tree
 
-    def set_style(self):
-        """ Simply set some config options and themes. """
-        pg.setConfigOption('background', 'w')
-        pg.setConfigOption('foreground', 'k')
-        pg.setConfigOptions(antialias=True)
+
 
     def initUI(self):
         """ Create all the widgets and place them in a layout """
         # General window properties
-        self.setWindowTitle('MuControl v0.9.5')
+        self.setWindowTitle('MuControl v0.9.9')
         self.resize(1600, 900)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -56,8 +52,8 @@ class MyWindow(QtGui.QMainWindow):
         # Settings button
         settingsButton = QtGui.QAction("&Settings", self)
         settingsButton.setShortcut('Ctrl+Alt+S')
-        self.dialog = SettingsWindow()
-        settingsButton.triggered.connect(self.dialog.show)
+        self.settings = SettingsWindow()
+        settingsButton.triggered.connect(self.settings.show)
         fileMenu.addAction(settingsButton)
 
         # Exit Button
@@ -86,7 +82,6 @@ class MyWindow(QtGui.QMainWindow):
         )
 
         self.p2.setSizePolicy(self.p1.sizePolicy())
-        # self.p1.enableAutoRange('xy', False)
 
         # Create control labels
         self.keyboardlbl = QtWidgets.QLabel(
@@ -103,8 +98,8 @@ class MyWindow(QtGui.QMainWindow):
             <p> <strong> +Frequency: </strong> Y, <strong> -Frequency: </strong> X; <strong> +Camber: </strong> B; \
             <strong> -Camber: </strong> A </p>'
         )
-        self.keyboardlbl.setFont(QtGui.QFont("Default", 11))
-        self.gamepadlbl.setFont(QtGui.QFont("Default", 11))
+        # self.keyboardlbl.setFont(QtGui.QFont("Default", 11))
+        # self.gamepadlbl.setFont(QtGui.QFont("Default", 11))
 
         # Create plot labels
         self.p1lbl = QtWidgets.QLabel('<b><u>Live Signal Plot</u></b>')
@@ -121,44 +116,49 @@ class MyWindow(QtGui.QMainWindow):
         layout.addWidget(self.keyboardlbl, 2, 0, 1, 3)
         layout.addWidget(self.gamepadlbl, 2, 1, 1, 3)
         layout.addWidget(self.p2, 1, 1)  # , 1, 2)
-        # layout.addWidget(settings_btn, 2, 1)
 
     def initThreads(self, config):
         """ Initialize the readThread and writeThread using configurations."""
+        if not debug_mode:
 
-        # # Instantiate the readThread
-        # self.readThread = SignalReader(
-        #     daq_name=config.daq_name,
-        #     readchannel_list=config.readchannel_list,
-        #     daq_rate=config.daq_rate,
-        #     readchunksize=config.readchunksize
-        # )  # Instantiate the readThread
-        #
-        # self.readThread.newData.connect(
-        #     self.p1.on_new_data_update_plot)  # Connect the data from the thread to my method
-        # self.readThread.errorMessage.connect(self.error_handling)
-        # self.readThread.start()
-        #
-        # # Instantiate the writeThread
-        # self.writeThread = SignalWriter(
-        #     funcg_name=config.funcg_name,
-        #     writechannel_list=config.writechannel_list,
-        #     funcg_rate=config.funcg_rate,
-        #     writechunksize=config.writechunksize,
-        #     zcoeff=config.defaults['zcoeff'],
-        #     # Default wave values
-        #     vmulti=self.t.getParamValue('Voltage Multiplier'),
-        #     freq=self.t.getParamValue('Frequency'),
-        #     camber=self.t.getParamValue('Field Camber'),
-        #     zphase=self.t.getParamValue('Z-Phase'),
-        #     calib_xamp=self.t.getParamValue('Calibration X-Voltage Ampl.', branch='Calibration'),
-        #     calib_yamp=self.t.getParamValue('Calibration Y-Voltage Ampl.', branch='Calibration'),
-        #     calib_zamp=self.t.getParamValue('Calibration Z-Voltage Ampl.', branch='Calibration'),
-        # )
-        # self.writeThread.errorMessage.connect(self.error_handling)
+            # Instantiate the readThread
+            self.readThread = SignalReader(
+                daq_name=config.daq_name,
+                readchannel_list=config.readchannel_list,
+                daq_rate=config.daq_rate,
+                readchunksize=config.readchunksize
+            )
 
-        self.writeThread = Generator(0.2, 10)
-        self.writeThread.newData.connect(self.p1.on_new_data_update_plot)
+            # Connect the outputs of the readThread and start it
+            self.readThread.newData.connect(
+                self.p1.on_new_data_update_plot)  # Connect the data from the thread to the plotting method
+            self.readThread.errorMessage.connect(self.error_handling)
+            self.readThread.start()
+
+            # Instantiate the writeThread
+            self.writeThread = SignalWriter(
+                funcg_name=config.funcg_name,
+                writechannel_list=config.writechannel_list,
+                funcg_rate=config.funcg_rate,
+                writechunksize=config.writechunksize,
+                zcoeff=config.defaults['zcoeff'],
+                # Default wave values
+                vmulti=self.t.getParamValue('Voltage Multiplier'),
+                freq=self.t.getParamValue('Frequency'),
+                camber=self.t.getParamValue('Field Camber'),
+                zphase=self.t.getParamValue('Z-Phase'),
+                calib_xamp=self.t.getParamValue('Calibration X-Voltage Ampl.', branch='Calibration'),
+                calib_yamp=self.t.getParamValue('Calibration Y-Voltage Ampl.', branch='Calibration'),
+                calib_zamp=self.t.getParamValue('Calibration Z-Voltage Ampl.', branch='Calibration'),
+            )
+            # Connect the error output
+            self.writeThread.errorMessage.connect(self.error_handling)
+        elif debug_mode:
+            # For debugging purposes, doesn't initialize the NI part but instead plots random data
+            self.writeThread = Generator(0.2, 10)
+            self.writeThread.newData.connect(self.p1.on_new_data_update_plot)
+
+        # Connect the controller input listening thread
         self.gamepadThread = ControllerThread()
         self.gamepadThread.newGamepadEvent.connect(self.t.on_gamepad_event)
         self.gamepadThread.start()
@@ -208,7 +208,9 @@ class MyWindow(QtGui.QMainWindow):
             self.writeThread.start()
 
         elif data is False:
-            # self.writeThread.writeTask.close()
+            if not debug_mode:
+                self.writeThread.writeTask.close()
+
             self.writeThread.running = False
 
     def error_handling(self, error_message):
@@ -216,14 +218,36 @@ class MyWindow(QtGui.QMainWindow):
         error_box.showMessage(error_message)
         error_box.exec_()
 
+    def closeEvent(self, evnt):
+        print('Window was closed.')
+
+        # Close controller thread
+        self.gamepadThread.terminate()
+
+        if not debug_mode:
+            # Close writeThread
+            if self.writeThread.running is True:
+                self.writeThread.writeTask.close()
+                self.writeThread.terminate()
+
+            # Close readThread
+            self.readThread.readTask.close()
+            self.readThread.terminate()
+
 
 if __name__ == '__main__':
-    # appctxt = ApplicationContext()  # FBS : 1. Instantiate ApplicationContext
-    appctxt = None
-    app = QtWidgets.QApplication([])  # Initialize application
-    w = MyWindow(appctxt)  # Instantiate my window
-    w.show()  # Show it
+    if not fbs_mode:
+        app = QtWidgets.QApplication([])  # Initialize application
+        w = MyWindow()  # Instantiate my window
+        w.show()  # Show it
+        exit_code = app.exec_()
 
-    # exit_code = appctxt.app.exec_() # FBS : 2. Invoke appctxt.app.exec_()
-    exit_code = app.exec_()
+    elif fbs_mode:
+        from fbs_runtime.application_context.PyQt5 import ApplicationContext
+
+        appctxt = ApplicationContext()  # FBS : 1. Instantiate ApplicationContext
+        w = MyWindow()  # Instantiate my window
+        w.show()  # Show it
+        exit_code = appctxt.app.exec_()  # FBS : 2. Invoke appctxt.app.exec_()
+
     sys.exit(exit_code)

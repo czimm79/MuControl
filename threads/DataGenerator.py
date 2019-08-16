@@ -3,8 +3,12 @@ from pyqtgraph.Qt import QtCore
 
 
 class Generator(QtCore.QThread):
-    """ Class that generates data on demand."""
-    newData = QtCore.pyqtSignal(object) # Designates that this class will have an output signal 'newData'
+    """Debugging hread that generates random data to send to the plot in place of the national instruments cards.
+
+    Uses np.random.normal to generate random data in a loop. Data is then emitted using the custom signal.
+
+    """
+    newData = QtCore.pyqtSignal(object)  # Designates that this class will have an output signal 'newData'
 
     def __init__(self, multi, freq, chunksize=100, delay=20):
         super().__init__()

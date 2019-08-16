@@ -1,9 +1,6 @@
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-import pyqtgraph.parametertree.parameterTypes as pTypes
-from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
+from pyqtgraph.Qt import QtCore
+from pyqtgraph.parametertree import Parameter, ParameterTree
 from PyQt5.QtCore import Qt
-from ConfigurationClass import Configuration
 
 
 class MyParamTree(ParameterTree):
@@ -46,6 +43,7 @@ class MyParamTree(ParameterTree):
     def sendChange(self, param, changes):
         self.paramChange.emit(param, changes)
 
+    # Convienience methods for modifying parameter values.
     def getParamValue(self, child, branch='Signal Design Parameters'):
         """Get the current value of a parameter."""
         return self.p.param(branch, child).value()
@@ -127,10 +125,13 @@ class MyParamTree(ParameterTree):
             gamepadEvent (list): incoming list from the controller class of format ['button', val]. ex. ['LJOY', 45]
         """
         func_map = {
-            'BTN_WEST': self.Key_Q,
-            'BTN_NORTH': self.Key_W,
+            'BTN_WEST': self.Key_F,
+            'BTN_NORTH': self.Key_G,
             'BTN_EAST': self.Key_B,
             'BTN_SOUTH': self.Key_V,
+            'BTN_TL': self.Key_Q,
+            'BTN_TR': self.Key_W,
+            'BTN_THUMBL': self.Key_T,
             'LJOY': self.Joystick_Left
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')

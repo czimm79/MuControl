@@ -41,7 +41,7 @@ class SignalWriter(QtCore.QThread):
 
         # pre-allocate an empty output array
         self.output = np.zeros([len(self.writechannel_list), self.writechunksize])
-        self.running = False # Variable to keep track of whether the thread is running.
+        self.running = False  # Variable to keep track of whether the thread is running.
 
     def run(self):
         """ This method runs when the thread is started using start()."""
