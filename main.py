@@ -215,6 +215,7 @@ class MyWindow(QtGui.QMainWindow):
 
     def error_handling(self, error_message):
         error_box = QtWidgets.QErrorMessage()
+        error_box.setModal(True)  # Cannot do other things in the app while this window is open
         error_box.showMessage(error_message)
         error_box.exec_()
 
@@ -231,8 +232,9 @@ class MyWindow(QtGui.QMainWindow):
                 self.writeThread.terminate()
 
             # Close readThread
-            self.readThread.readTask.close()
             self.readThread.terminate()
+        elif debug_mode:
+            self.writeThread.terminate()
 
 
 if __name__ == '__main__':

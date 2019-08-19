@@ -37,6 +37,7 @@ class SignalReader(QtCore.QThread):
                         self.errorMessage.emit(
                             "Couldn't initialize the read channels - is the read device name correct? "
                             f'Devices connected: {find_ni_devices()}')
+                        return
             try:
                 readTask.timing.cfg_samp_clk_timing(
                     rate = self.daq_rate,
@@ -44,6 +45,7 @@ class SignalReader(QtCore.QThread):
             except Exception as e:
                 self.errorMessage.emit("Couldn't start the read task - is the read device name correct? "
                                    f'Devices connected: {find_ni_devices()}')
+                return
 
 
             reader = AnalogMultiChannelReader(readTask.in_stream)

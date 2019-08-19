@@ -40,7 +40,7 @@ class ControllerThread(QtCore.QThread):
                 # Buttons
                 if event.ev_type == 'Key':
                     if event.state == 1:
-                        print(str(event.code))
+                        # print(str(event.code))
                         self.newGamepadEvent.emit([str(event.code), event.state])
                         QtCore.QThread.msleep(10)
                 # Joystick

@@ -57,6 +57,7 @@ class SignalWriter(QtCore.QThread):
                 if index == 0:
                     self.errorMessage.emit('Could not open write channels. Are device names correct?'
                                            f" Devices connected: {find_ni_devices()}")
+                    return
 
         # Set the generation rate, and buffer size.
         self.writeTask.timing.cfg_samp_clk_timing(
@@ -94,7 +95,13 @@ class SignalWriter(QtCore.QThread):
             )
 
         # Write the first set of data into the output buffer
-        self.writer.write_many_sample(data=self.output)  # Write two chunks of beginning data to avoid interruption
+        try:
+            self.writer.write_many_sample(data=self.output)  # Write two chunks of beginning data to avoid interruption
+        except:
+            self.errorMessage.emit('Could not write data to the output. Is the output device name correct?'
+                                   f" Devices connected: {find_ni_devices()}")
+            return
+
         self.writer.write_many_sample(data=self.output)  # if a data point is slightly late.
         self.writeTask.start()
 
