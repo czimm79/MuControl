@@ -35,11 +35,10 @@ class MyWindow(QtGui.QMainWindow):
         self.p1.keyPressed.connect(self.t.on_key)  # Connect keyPresses to param tree
 
 
-
     def initUI(self):
         """ Create all the widgets and place them in a layout """
         # General window properties
-        self.setWindowTitle('MuControl v0.9.9')
+        self.setWindowTitle('MuControl v1.0.0')
         self.resize(1600, 900)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -220,7 +219,6 @@ class MyWindow(QtGui.QMainWindow):
         error_box.exec_()
 
     def closeEvent(self, evnt):
-        print('Window was closed.')
 
         # Close controller thread
         self.gamepadThread.terminate()

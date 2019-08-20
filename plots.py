@@ -45,14 +45,17 @@ class ThreeDPlot(gl.GLViewWidget):
 
         # Set up plot, add white background grids
         self.gridsize = 10
+        gridx = gl.GLGridItem()
+        gridx.translate(0, 0, -2)
+        self.addItem(gridx)
 
         # self.opts['distance'] = 40
 
         gaxis = gl.GLAxisItem()
         gaxis.setSize(x=3, y=3, z=3)
         self.addItem(gaxis)
-        self.orbit(230, 10)  # Sets default view position
-        self.setBackgroundColor('w')
+        self.orbit(234, -5)  # Sets default view position
+        self.setBackgroundColor('k')
 
         # Initialize signal design variables
         self.funcg_rate = funcg_rate
@@ -75,7 +78,7 @@ class ThreeDPlot(gl.GLViewWidget):
         self.last_update = 0.1
         self.plot_data(firstrun=True)
 
-    def plot_data(self, firstrun=False):  # TODO Figure out someway to not plot EVERY update to z-phase.
+    def plot_data(self, firstrun=False):
         """
         On a change in signal design properties, plot a new circle.
         """
@@ -104,7 +107,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
             # Plot 4 line segments, two of which are blue.
             self.last_lines = []  # To clear previous lines when a new circle is plotted
-            self.colors = ['r', 'g', 'b', 'b']
+            self.colors = ['g', 'r', 'b', 'b']
             pts_len = self.pts.shape[1]
             n_segments = 4
             j = pts_len // n_segments
@@ -116,3 +119,10 @@ class ThreeDPlot(gl.GLViewWidget):
                 self.addItem(line)
                 self.last_lines.append(line)
 
+            # Plot a cone
+            # cone_mesh_data = gl.MeshData.cylinder(10, 10, radius=[0.01, 0.5], length=1)
+            # cone = gl.GLMeshItem(meshdata=cone_mesh_data, color=pg.glColor('c'), edgeColor=pg.glColor('w'))
+            # cone.translate(0, 5, 0)
+            # cone.rotate(45, 0, 0, 0, local=True)
+            # self.addItem(cone)
+            # self.last_lines.append(cone)

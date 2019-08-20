@@ -30,10 +30,10 @@ class SettingsWindow(QtWidgets.QDialog):
             {'name': 'Default Signal Values', 'type': 'group', 'children': [
                 {'name': 'Z-Coefficient', 'type': 'float', 'value': 0.653, 'step': 0.001},
                 {'name': 'Voltage Multiplier', 'type': 'float', 'value': 1.0, 'step': 0.25},
-                {'name': 'Frequency', 'type': 'float', 'value': 10, 'step': 10, 'siPrefix': True,
+                {'name': 'Frequency', 'type': 'float', 'value': 20, 'step': 10, 'siPrefix': True,
                  'suffix': 'Hz'},
-                {'name': 'Z-Phase', 'type': 'int', 'value': 0, 'step': 1},
-                {'name': 'Field Camber', 'type': 'int', 'value': 90, 'step': 1, 'siPrefix': True,
+                {'name': 'Z-Phase', 'type': 'int', 'value': 270, 'step': 1},
+                {'name': 'Field Camber', 'type': 'int', 'value': 60, 'step': 1, 'siPrefix': True,
                  'suffix': '°'}
             ]}
         ]
