@@ -21,6 +21,8 @@ class SignalPlot(pg.PlotWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # By default the plot is the keyboard focus
         self.showGrid(y=True)
 
+        self.disableAutoRange('y')
+
     def keyPressEvent(self, event):
         """ When a key is pressed, pass it up to the PyQt event handling system. """
         super().keyPressEvent(event)

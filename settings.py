@@ -1,11 +1,14 @@
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.parametertree import Parameter, ParameterTree
 from pyqtgraph.Qt import QtWidgets, QtGui
-import ast
+import ast  # For literal interpretations of settings inputs
+
 
 class SettingsWindow(QtWidgets.QDialog):
-    """
-    Class that constructs and holds the a settings parameter tree in a dialog box.
+    """Class which wraps around a dialog window, housing a parameter tree that communicates with QSettings.
+
+
+
     """
     def __init__(self):
         super().__init__()
@@ -39,7 +42,7 @@ class SettingsWindow(QtWidgets.QDialog):
         ]
 
         # Settings
-        self.qsettings = QtCore.QSettings("MarrLabs", "MuControl")  # Instantiate settings object
+        self.qsettings = QtCore.QSettings("MarrLabCSM", "MuControl")  # Instantiate settings object
         self.qss = self.get_parameter_strings()  # pulling all default strings
 
         # Edge case: if this is the first time running the program or the settings are missing, use defaults.

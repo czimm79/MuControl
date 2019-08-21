@@ -3,7 +3,7 @@ from pyqtgraph.Qt import QtCore
 
 
 class Generator(QtCore.QThread):
-    """Debugging hread that generates random data to send to the plot in place of the national instruments cards.
+    """Debugging thread that generates random data to send to the plot in place of the national instruments cards.
 
     Uses np.random.normal to generate random data in a loop. Data is then emitted using the custom signal.
 
@@ -22,7 +22,6 @@ class Generator(QtCore.QThread):
     def run(self):
         """ This method runs when the thread is started."""
         self.running = True
-        print('Got to the running')
         while self.running:
             try:
                 self.output = self.multi * np.random.normal(size=(6, self.chunksize))
