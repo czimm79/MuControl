@@ -156,7 +156,6 @@ class SignalWriter(QtCore.QThread):
             self.writer.write_many_sample(data=self.output)
 
         else:
-            self.writeTask.wait_until_done()
             self.writeTask.close()
 
         return 0

@@ -7,7 +7,7 @@ class ControllerThread(QtCore.QThread):
     """ A QThread which monitors the controller key presses and emits the events.
 
     Attributes:
-        dead_zone: determines how far the joystick needs to be moved to register. default 5000
+        dead_zone: determines how far the joystick needs to be moved to register. default 10000
         running (bool): used to control the state of the run loop from outside this thread
     """
     newGamepadEvent = QtCore.pyqtSignal(object)
@@ -42,9 +42,10 @@ class ControllerThread(QtCore.QThread):
         x = 0
         y = 0
 
-        if self.running is True and gamepad is not None:
-            while True:
-                # QtCore.QThread.msleep(10)
+        if gamepad is not None:
+            while self.running:
+                # QtCore.QThread.msleep(1)
+                events = None
                 events = gamepad.read()
                 event = events[0]
 

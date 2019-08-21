@@ -50,8 +50,9 @@ class MyWindow(QtGui.QMainWindow):
 
         # Make menu bar at the top of the window
         mainMenu = self.menuBar()
-        mainMenu.setStyleSheet("""QMenuBar { background-color: #F0F0F0; }""")  # Makes the menu bar grey-ish
+        # mainMenu.setStyleSheet("""QMenuBar { background-color: #F0F0F0; }""")  # Makes the menu bar grey-ish
         fileMenu = mainMenu.addMenu('File')  # Adds the file button
+        helpMenu = mainMenu.addMenu('Help')
 
         # Settings button
         settingsButton = QtGui.QAction("&Settings", self)
@@ -64,6 +65,13 @@ class MyWindow(QtGui.QMainWindow):
         exitButton.setShortcut('Ctrl+Q')
         exitButton.triggered.connect(self.close)
         fileMenu.addAction(exitButton)
+
+        # User Guide button in help menu
+        userguideButton = QtGui.QAction("Open User Guide", self)
+        userguideButton.setShortcut('Ctrl+H')
+        userguideButton.triggered.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl(
+            "https://czimm79.github.io/mucontrol-userguide/index.html")))
+        helpMenu.addAction(userguideButton)
 
         # Create an empty box to hold all the following widgets
         self.mainbox = QtGui.QWidget()
@@ -253,7 +261,6 @@ class MyWindow(QtGui.QMainWindow):
             evnt: dummy variable, unused
 
         """
-
         # Close controller thread
         self.gamepadThread.running = False
 

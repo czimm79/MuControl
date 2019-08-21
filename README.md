@@ -13,13 +13,13 @@ MuControl is a self-contained application intended for the manipulation and moni
 7. Provide a platform that can be extended with more features and advanced functionality (gradient tracking,
    computer vision, corkscrew modalities)
    
-[From the Introduction of the MuControl User Guide]
+From the introduction of the [MuControl User Guide](https://czimm79.github.io/mucontrol-userguide/index.html).
 
-## Version 0.9.9
-Fully complete application. For version 1.0.0 include documentation and conduct some quality control to
-smash any persisting bugs.
+## Version 1.0.0
+Fully complete application. Quality control on multiple computers did not yield any bugs.. yet. User guide
+is included and located in the help menu.
 
 
-
+### Extra Info
 Written by Coy Zimmermann in 2019 as part of my PhD thesis work on magnetically propelled microwheels in Dr. David W.M.
 Marr's group at the Colorado School of Mines.
