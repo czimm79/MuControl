@@ -5,10 +5,16 @@ import ast  # For literal interpretations of settings inputs
 
 
 class SettingsWindow(QtWidgets.QDialog):
-    """Class which wraps around a dialog window, housing a parameter tree that communicates with QSettings.
+    """Class which wraps around a QDialog window, housing a parameter tree that communicates with QSettings.
 
-
-
+    Attributes:
+        default_params: a nested dictionary containing the same parameters as params, but with an assigned value. This
+            is utilized when there are no QSettings already available on the computer.
+        params: same structure as default_params but with settings read in from QSettings
+        qsettings: an instantiated version of QSettings, where all of the persistent settings are saved on the host
+            computer.
+        qss: all of the save locations of values in QSettings, in the form "Read Parameters/DAQ Name"
+        t: the settings parameter tree object
     """
     def __init__(self):
         super().__init__()

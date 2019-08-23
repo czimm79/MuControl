@@ -4,14 +4,20 @@ from PyQt5.QtCore import Qt
 
 
 class MyParamTree(ParameterTree):
+    """The parameter tree widget that lives in the bottom of the main window.
+
+    This is where the current parameters of the application live. When a parameter here is changed by ANY method
+    (UI, gamepad, keyboard), this object sends a signal to the MainWindow to get forward to the salient thread/object.
+    The values are initialized from the config parameter passed in when instantiating this object.
+
+    Attributes:
+        params: a nested dictionary which contains the visable and edit-able parameters during program run-time
+        p: the actual parameter tree object that contains the values
+
+    """
     paramChange = QtCore.pyqtSignal(object, object)  # MyParamTree outputs a signal with param and changes.
 
     def __init__(self, config):
-        """
-        Initialize the parameter tree.
-
-        :param config: instantiated config object containing configuration values
-        """
         super().__init__()
         self.params = [
             {'name': 'Signal Design Parameters', 'type': 'group', 'children': [
@@ -35,7 +41,7 @@ class MyParamTree(ParameterTree):
         self.p = Parameter.create(name='self.params', type='group', children=self.params)
         self.setParameters(self.p, showTop=False)
 
-        self.p.sigTreeStateChanged.connect(self.sendChange) # When the params change, send to method to emit.
+        self.p.sigTreeStateChanged.connect(self.sendChange)  # When the params change, send to method to emit.
 
         # Connect keyPresses
         self.setFocusPolicy(Qt.NoFocus)

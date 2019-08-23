@@ -2,6 +2,7 @@ import numpy as np
 import nidaqmx
 import pyqtgraph as pg
 
+
 def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
     """
     Given all signal parameters, a chunk of signal will be calculated and output.

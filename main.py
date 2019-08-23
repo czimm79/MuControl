@@ -13,15 +13,19 @@ from threads.Controller import ControllerThread
 from plots import SignalPlot, ThreeDPlot
 from misc_functions import set_style
 
-debug_mode = True  # Switch to either use NI threads or a random data generator.
+debug_mode = True     # Switch to either use NI threads or a random data generator.
 fbs_mode = False  # Switch to use either the PyQt5 app starting or the FBS container
 
 
 class MyWindow(QtGui.QMainWindow):
     """ The main window of the application.
 
-    Setting up the main window. Anything with 'self' refers to the main window. This is the
-    module that everything connects into.
+    This class is the parent to all the widgets inside of it. The grid layout of the UI is described here. This class
+    also serves as a "middle man" for communication between threads. e.g. data from the readThread is passed here and
+    then passed to the plot widget.
+
+    Attributes:
+        config: instantiated version of the SettingsWindow class located in settings.py
     """
 
     def __init__(self):
@@ -44,7 +48,7 @@ class MyWindow(QtGui.QMainWindow):
         puzzle pieces are assembled.
         """
         # General window properties
-        self.setWindowTitle('MuControl v1.0.0')
+        self.setWindowTitle('MuControl v1.0.0a')
         self.resize(1280, 720)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -103,7 +107,7 @@ class MyWindow(QtGui.QMainWindow):
         self.gamepadlbl = QtWidgets.QLabel(
             '<h3> Gamepad Controls </h3>\
             <span style="font-size: 10pt;">To enable gamepad controls, plug in the controller before starting the program. </span> \
-            <p> <strong> Toggle Output:  </strong> Left Thumb Click; <strong> +Voltage Multiplier: </strong> RT; <strong> -Voltage Multiplier: </strong> LT </p> \
+            <p> <strong> Toggle Output:  </strong> Left Thumb Click; <strong> +Voltage Multiplier: </strong> RB; <strong> -Voltage Multiplier: </strong> LB </p> \
             <p> <strong> +Frequency: </strong> Y, <strong> -Frequency: </strong> X; <strong> +Camber: </strong> B; \
             <strong> -Camber: </strong> A </p>'
         )
@@ -176,6 +180,7 @@ class MyWindow(QtGui.QMainWindow):
         self.gamepadThread = ControllerThread()
         self.gamepadThread.newGamepadEvent.connect(self.t.on_gamepad_event)
         self.gamepadThread.start()
+        self.gamepadThread.setPriority(QtCore.QThread.LowestPriority)
 
     def change(self, param, changes):
         """Parses the value change signals coming in from the Parameter Tree.
@@ -263,16 +268,16 @@ class MyWindow(QtGui.QMainWindow):
         """
         # Close controller thread
         self.gamepadThread.running = False
-
+        self.gamepadThread.exit()
         # Close writeThread
         self.writeThread.running = False
-        # self.writeThread.terminate()
+        self.writeThread.exit()
 
         if not debug_mode:
             # Close readThread
             self.readThread.running = False
-            # self.readThread.terminate()
-        sleep(0.3)
+            self.readThread.exit()
+        sleep(0.4)
 
 
 if __name__ == '__main__':

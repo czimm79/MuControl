@@ -25,7 +25,7 @@ class ControllerThread(QtCore.QThread):
         Key (digital button), and Absolute (analog button). For the analog joystick, the xy coordinates are converted
         using my function xy_to_cylindrical, located in misc_functions.py.
 
-        Once the key is filtered and determined to be relevent, it emits a list with the event code and state using the
+        Once the key is filtered and determined to be relevant, it emits a list with the event code and state using the
         defined newGamepadEvent signal. eg. ['BTN_WEST', 1] or ['LJOY', 47.25]
 
         """
@@ -45,7 +45,7 @@ class ControllerThread(QtCore.QThread):
         if gamepad is not None:
             while self.running:
                 # QtCore.QThread.msleep(1)
-                events = None
+                events = None  # Clear the events variable each loop so unprocessed events don't pile up
                 events = gamepad.read()
                 event = events[0]
 
@@ -64,6 +64,5 @@ class ControllerThread(QtCore.QThread):
                     magnitude, degrees = xy_to_cylindrical(x, y)  # Convert to cylindrical
                     if magnitude > self.dead_zone:  # If its not in the dead zone, emit to the signal
                         self.newGamepadEvent.emit(['LJOY', degrees])
-                        # QtCore.QThread.msleep(10)
 
 
