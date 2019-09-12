@@ -6,6 +6,7 @@ import pyqtgraph as pg
 def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
     """
     Given all signal parameters, a chunk of signal will be calculated and output.
+    Through testing, it seems like adding a DC offset here does not affect the output from the amplifiers.
 
     INPUTS:
     funcg_rate : the rate at which samples are written from the function generator

@@ -13,8 +13,8 @@ from threads.Controller import ControllerThread
 from plots import SignalPlot, ThreeDPlot
 from misc_functions import set_style
 
-debug_mode = True     # Switch to either use NI threads or a random data generator.
-fbs_mode = False  # Switch to use either the PyQt5 app starting or the FBS container
+debug_mode = False     # Switch to either use NI threads or a random data generator.
+fbs_mode = True  # Switch to use either the PyQt5 app starting or the FBS container
 
 
 class MyWindow(QtGui.QMainWindow):
@@ -48,7 +48,7 @@ class MyWindow(QtGui.QMainWindow):
         puzzle pieces are assembled.
         """
         # General window properties
-        self.setWindowTitle('MuControl v1.0.0a')
+        self.setWindowTitle('MuControl v1.0.2')
         self.resize(1280, 720)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -277,7 +277,15 @@ class MyWindow(QtGui.QMainWindow):
             # Close readThread
             self.readThread.running = False
             self.readThread.exit()
-        sleep(0.4)
+
+        # Make sure the threads are closed before shutting down
+        if debug_mode:
+            while self.gamepadThread.isRunning() or self.writeThread.isRunning():
+                sleep(0.4)
+        # Good stuff
+        elif not debug_mode:
+            while self.gamepadThread.isRunning() or self.writeThread.isRunning() or self.readThread.isRunning():
+                sleep(0.4)
 
 
 if __name__ == '__main__':
