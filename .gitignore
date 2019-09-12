@@ -6,3 +6,6 @@ __pycache__/
 
 # Ignore .spyproject folder for Spyder IDE
 .spyproject/
+
+# Ignore scratch
+scratch/

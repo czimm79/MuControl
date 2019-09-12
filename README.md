@@ -15,11 +15,22 @@ MuControl is a self-contained application intended for the manipulation and moni
    
 From the introduction of the [MuControl User Guide](https://czimm79.github.io/mucontrol-userguide/index.html).
 
-## Version 1.0.0
+
+## Changelog
+
+#### Version 1.0.3
+Fixed bug where on certain computers the gamepad thread was not being terminated resulted in a laggy experience. If it does not close, it is now
+forcefully terminated.
+
+#### Version 1.0.2
+First distribution to collaborators. Minor documentation changes. App now pauses for 0.4 seconds before closing 
+to insure threads are closed.
+
+#### Version 1.0.0
 Fully complete application. Quality control on multiple computers did not yield any bugs.. yet. User guide
 is included and located in the help menu.
 
 
-### Extra Info
+## Extra Info
 Written by Coy Zimmermann in 2019 as part of my PhD thesis work on magnetically propelled microwheels in Dr. David W.M.
 Marr's group at the Colorado School of Mines.

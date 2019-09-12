@@ -48,7 +48,7 @@ class MyWindow(QtGui.QMainWindow):
         puzzle pieces are assembled.
         """
         # General window properties
-        self.setWindowTitle('MuControl v1.0.2')
+        self.setWindowTitle('MuControl v1.0.3')
         self.resize(1280, 720)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 
@@ -239,7 +239,7 @@ class MyWindow(QtGui.QMainWindow):
 
         """
         if data is True:  # If the box is checked
-            self.writeThread.start()
+            self.writeThread.start()  # Start the thread
 
         elif data is False:
             self.writeThread.running = False
@@ -279,13 +279,22 @@ class MyWindow(QtGui.QMainWindow):
             self.readThread.exit()
 
         # Make sure the threads are closed before shutting down
+        sleeps = 0
         if debug_mode:
             while self.gamepadThread.isRunning() or self.writeThread.isRunning():
+                sleeps += 1
                 sleep(0.4)
+
+                if sleeps > 1:  # Forcibly quit if it does not close...
+                    self.gamepadThread.terminate()
         # Good stuff
         elif not debug_mode:
             while self.gamepadThread.isRunning() or self.writeThread.isRunning() or self.readThread.isRunning():
+                sleeps += 1
                 sleep(0.4)
+
+                if sleeps > 1:  # Forcibly quit if it does not close...
+                    self.gamepadThread.terminate()
 
 
 if __name__ == '__main__':
