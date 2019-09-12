@@ -19,7 +19,7 @@ From the introduction of the [MuControl User Guide](https://czimm79.github.io/mu
 ## Changelog
 
 #### Version 1.0.3
-Fixed bug where on certain computers the gamepad thread was not being terminated resulted in a laggy experience. If it does not close, it is now
+Fixed bug where on certain computers the gamepad thread was not being terminated, resulting in a laggy experience. If it does not close, it is now
 forcefully terminated.
 
 #### Version 1.0.2
