@@ -1,91 +1,76 @@
 from pyqtgraph.Qt import QtCore
 from misc_functions import xy_to_cylindrical
-from inputs import devices, DeviceManager, get_gamepad
 from time import sleep
+import XInput as xi
 
 
 class ControllerThread(QtCore.QThread):
     """ A QThread which monitors the controller key presses and emits the events.
 
     Attributes:
-        dead_zone: determines how far the joystick needs to be moved to register. default 10000
+        SLEEP (float): the time that the while loop pauses while checking controller events. Higher sleep constants
+            equals better performance.
         running (bool): used to control the state of the run loop from outside this thread
     """
     newGamepadEvent = QtCore.pyqtSignal(object)
 
-    def __init__(self):
+    def __init__(self, sleep_constant=0.01):
         super().__init__()
 
-        self.dead_zone = 10000
         self.running = False
-
+        self.sleep_constant = sleep_constant
         # Initialize variables to keep track of x and y
         self.x = 0
         self.y = 0
 
     def run(self):
-        """Runs when the start method is called on the thread.
-
-        First, an event is read from the joystick and filtered for:
-        Key (digital button), and Absolute (analog button). For the analog joystick, the xy coordinates are converted
-        using my function xy_to_cylindrical, located in misc_functions.py.
-
-        Once the key is filtered and determined to be relevant, it emits a list with the event code and state using the
-        defined newGamepadEvent signal. eg. ['BTN_WEST', 1] or ['LJOY', 47.25]
-
+        """
         """
         self.running = True
 
         # Try connecting to the gamepad
-        try:
-            self.gamepad = devices.gamepads[0]
-        except IndexError:
-            print('No controller connected.')
-            self.gamepad = None
+        connected = xi.get_connected()
 
-        if self.gamepad is not None:
-            while self.running:
-                self.process_available_events()
+        if any(controller is True for controller in connected):
+            print("A controller is connected!")
+        else:
+            print("No controller connected.")
+            self.running = False
 
-    def filter_event(self, event):
+        # Start the process loop
+        while self.running:
+            sleep(self.sleep_constant)
+            events = xi.get_events()
+            for event in events:
+                self.filter_events(event)
+
+    def filter_events(self, event):
         """Filter the events and emit the salient ones.
 
         Args:
-            event: event object from process_available_events
+            event: event dictionary with format: {'user_index': 1, 'type': 4, 'button': 'X', 'button_id': 16384}
+                Type 4 = Button Pressed, Type 6 = Stick Moved
 
         Returns:
             nothing, but emits salient events to QThread signal
         """
         # Filter unused events
-        if event.ev_type == 'Sync':
+        if event.type == 3:  # Button is released, won't track this
             return
-        if event.ev_type == 'Misc':
-            return
+
         # Buttons
-        if event.ev_type == 'Key':
-            if event.state == 1:
-                # print(str(event.code), event.state)
-                self.newGamepadEvent.emit([str(event.code), event.state])
-                # QtCore.QThread.msleep(10)
+        if event.type == 4:
+            print(event.button)
+            self.newGamepadEvent.emit([event.button, 1])
+            # QtCore.QThread.msleep(10)
+
         # Joystick
-        elif event.ev_type == 'Absolute':
-            if event.code == 'ABS_X':  # X-Axis of the joystick
-                self.x = event.state
-            elif event.code == 'ABS_Y':  # Y-Axis of the joystick
-                self.y = event.state
+        elif event.type == 6:
+            if event.dir[0] != 0.00 and event.dir[1] != 0.0:  # Ignore signal that comes when joystick is let go
+                self.x, self.y = event.dir
+
             magnitude, degrees = xy_to_cylindrical(self.x, self.y)  # Convert to cylindrical
-            if magnitude > self.dead_zone:  # If its not in the dead zone, emit to the signal
-                # print(['LJOY', degrees])
-                self.newGamepadEvent.emit(['LJOY', degrees])
+            self.newGamepadEvent.emit(['LJOY', degrees])
 
-    def process_available_events(self):
-        """Read the events from inputs module read function."""
 
-        try:
-            events = self.gamepad.read()
-        except EOFError:
-            events = []
-
-        for event in events:
-            self.filter_event(event)
 
