@@ -1,6 +1,7 @@
 from pyqtgraph.Qt import QtCore
 from misc_functions import xy_to_cylindrical
-from inputs import devices
+from inputs import devices, DeviceManager, get_gamepad
+from time import sleep
 
 
 class ControllerThread(QtCore.QThread):
@@ -18,6 +19,10 @@ class ControllerThread(QtCore.QThread):
         self.dead_zone = 10000
         self.running = False
 
+        # Initialize variables to keep track of x and y
+        self.x = 0
+        self.y = 0
+
     def run(self):
         """Runs when the start method is called on the thread.
 
@@ -33,36 +38,54 @@ class ControllerThread(QtCore.QThread):
 
         # Try connecting to the gamepad
         try:
-            gamepad = devices.gamepads[0]
+            self.gamepad = devices.gamepads[0]
         except IndexError:
             print('No controller connected.')
-            gamepad = None
+            self.gamepad = None
 
-        # Initialize variables to keep track of x and y
-        x = 0
-        y = 0
-
-        if gamepad is not None:
+        if self.gamepad is not None:
             while self.running:
-                # QtCore.QThread.msleep(1)
-                events = None  # Clear the events variable each loop so unprocessed events don't pile up
-                events = gamepad.read()
-                event = events[0]
+                self.process_available_events()
 
-                # Buttons
-                if event.ev_type == 'Key':
-                    if event.state == 1:
-                        # print(str(event.code))
-                        self.newGamepadEvent.emit([str(event.code), event.state])
-                        QtCore.QThread.msleep(10)
-                # Joystick
-                elif event.ev_type == 'Absolute':
-                    if event.code == 'ABS_X':  # X-Axis of the joystick
-                        x = event.state
-                    elif event.code == 'ABS_Y':  # Y-Axis of the joystick
-                        y = event.state
-                    magnitude, degrees = xy_to_cylindrical(x, y)  # Convert to cylindrical
-                    if magnitude > self.dead_zone:  # If its not in the dead zone, emit to the signal
-                        self.newGamepadEvent.emit(['LJOY', degrees])
+    def filter_event(self, event):
+        """Filter the events and emit the salient ones.
 
+        Args:
+            event: event object from process_available_events
+
+        Returns:
+            nothing, but emits salient events to QThread signal
+        """
+        # Filter unused events
+        if event.ev_type == 'Sync':
+            return
+        if event.ev_type == 'Misc':
+            return
+        # Buttons
+        if event.ev_type == 'Key':
+            if event.state == 1:
+                # print(str(event.code), event.state)
+                self.newGamepadEvent.emit([str(event.code), event.state])
+                # QtCore.QThread.msleep(10)
+        # Joystick
+        elif event.ev_type == 'Absolute':
+            if event.code == 'ABS_X':  # X-Axis of the joystick
+                self.x = event.state
+            elif event.code == 'ABS_Y':  # Y-Axis of the joystick
+                self.y = event.state
+            magnitude, degrees = xy_to_cylindrical(self.x, self.y)  # Convert to cylindrical
+            if magnitude > self.dead_zone:  # If its not in the dead zone, emit to the signal
+                # print(['LJOY', degrees])
+                self.newGamepadEvent.emit(['LJOY', degrees])
+
+    def process_available_events(self):
+        """Read the events from inputs module read function."""
+
+        try:
+            events = self.gamepad.read()
+        except EOFError:
+            events = []
+
+        for event in events:
+            self.filter_event(event)
 
