@@ -2,7 +2,7 @@ import numpy as np
 from pyqtgraph.Qt import QtCore
 import nidaqmx
 from nidaqmx.stream_writers import AnalogMultiChannelWriter
-from misc_functions import generate_waves, generate_calib_waves, find_ni_devices
+from misc_functions import WaveGenerator, find_ni_devices
 
 
 class SignalWriter(QtCore.QThread):
@@ -50,6 +50,9 @@ class SignalWriter(QtCore.QThread):
         # pre-allocate an empty output array
         self.output = np.zeros([len(self.writechannel_list), self.writechunksize])
         self.running = False  # Variable to keep track of whether the thread is running.
+
+        # Instantiate the WaveGenerator
+        self.WaveGen = WaveGenerator()
 
     def run(self):
         """Runs when the start method is called on the thread.
@@ -99,7 +102,7 @@ class SignalWriter(QtCore.QThread):
         self.writer = AnalogMultiChannelWriter(self.writeTask.out_stream)
 
         if not self.calib_mode:
-            self.output = generate_waves(
+            self.output = self.WaveGen.generate_waves(
                 funcg_rate=self.funcg_rate,
                 writechunksize=self.writechunksize,
                 vmulti=self.vmulti,
@@ -108,7 +111,7 @@ class SignalWriter(QtCore.QThread):
                 zphase=self.zphase,
                 zcoeff=self.zcoeff)
         elif self.calib_mode:
-            self.output = generate_calib_waves(
+            self.output = self.WaveGen.generate_calib_waves(
                 funcg_rate=self.funcg_rate,
                 writechunksize=self.writechunksize,
                 calib_xamp=self.calib_xamp,
@@ -137,7 +140,7 @@ class SignalWriter(QtCore.QThread):
         """
         if self.running is True:
             if not self.calib_mode:
-                self.output = generate_waves(
+                self.output = self.WaveGen.generate_waves(
                     funcg_rate=self.funcg_rate,
                     writechunksize=self.writechunksize,
                     vmulti=self.vmulti,
@@ -146,7 +149,7 @@ class SignalWriter(QtCore.QThread):
                     zphase=self.zphase,
                     zcoeff=self.zcoeff)
             elif self.calib_mode:
-                self.output = generate_calib_waves(
+                self.output = self.WaveGen.generate_calib_waves(
                     funcg_rate=self.funcg_rate,
                     writechunksize=self.writechunksize,
                     calib_xamp=self.calib_xamp,

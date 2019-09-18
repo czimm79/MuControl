@@ -14,7 +14,7 @@ class ControllerThread(QtCore.QThread):
     """
     newGamepadEvent = QtCore.pyqtSignal(object)
 
-    def __init__(self, sleep_constant=0.01):
+    def __init__(self, sleep_constant=0.001):
         super().__init__()
 
         self.running = False
@@ -60,7 +60,7 @@ class ControllerThread(QtCore.QThread):
 
         # Buttons
         if event.type == 4:
-            print(event.button)
+            # print(event.button)
             self.newGamepadEvent.emit([event.button, 1])
             # QtCore.QThread.msleep(10)
 

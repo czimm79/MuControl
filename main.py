@@ -13,7 +13,7 @@ from threads.Controller import ControllerThread
 from plots import SignalPlot, ThreeDPlot
 from misc_functions import set_style
 
-debug_mode = True     # Switch to either use NI threads or a random data generator.
+debug_mode = False     # Switch to either use NI threads or a random data generator.
 fbs_mode = False  # Switch to use either the PyQt5 app starting or the FBS container
 
 
@@ -29,6 +29,7 @@ class MyWindow(QtGui.QMainWindow):
     """
 
     def __init__(self):
+
         super().__init__()  # Inherit everything from the Qt "QMainWindow" class
 
         # Instantiate class in settings.py which contains the settings UI AND the persistent QSettings values
@@ -48,7 +49,7 @@ class MyWindow(QtGui.QMainWindow):
         puzzle pieces are assembled.
         """
         # General window properties
-        self.setWindowTitle('MuControl v1.0.3')
+        # self.setWindowTitle('MuControl v1.0.3')
         self.resize(1280, 720)  # Non- maximized size
         self.setWindowState(QtCore.Qt.WindowMaximized)
 

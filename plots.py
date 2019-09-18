@@ -2,7 +2,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
 import pyqtgraph.opengl as gl
-from misc_functions import generate_waves
+from misc_functions import WaveGenerator
 
 
 class SignalPlot(pg.PlotWidget):
@@ -45,6 +45,8 @@ class ThreeDPlot(gl.GLViewWidget):
     def __init__(self, funcg_rate, writechunksize, vmulti, freq, camber, zphase):
         super().__init__()
 
+        # Instantiate wave generator
+        self.WaveGen = WaveGenerator()
         # Set up plot, add white background grids
         self.gridsize = 10
         gridx = gl.GLGridItem()
@@ -67,7 +69,7 @@ class ThreeDPlot(gl.GLViewWidget):
         self.camber = camber
         self.zphase = zphase
 
-        self.pts = generate_waves(
+        self.pts = self.WaveGen.generate_waves(
             funcg_rate=self.funcg_rate,
             writechunksize=self.writechunksize,
             vmulti=self.vmulti,
@@ -98,7 +100,7 @@ class ThreeDPlot(gl.GLViewWidget):
                 for i, e in enumerate(self.last_lines):
                     self.removeItem(self.last_lines[i])
 
-            self.pts = generate_waves(
+            self.pts = self.WaveGen.generate_waves(
                 funcg_rate=self.funcg_rate,
                 writechunksize=self.writechunksize,
                 vmulti=self.vmulti,
@@ -110,10 +112,10 @@ class ThreeDPlot(gl.GLViewWidget):
             # Plot 4 line segments, two of which are blue.
             self.last_lines = []  # To clear previous lines when a new circle is plotted
             self.colors = ['g', 'r', 'b', 'b']
-            pts_len = self.pts.shape[1]
+            pts_len = self.pts.shape[1]  # How many points
             n_segments = 4
             j = pts_len // n_segments
-            for index, i in enumerate(np.arange(start=0, stop=pts_len, step=pts_len // n_segments)):
+            for index, i in enumerate(np.arange(start=0, stop=pts_len, step=j)):
                 #  Plot separate color lines
                 j = i + j
                 line = gl.GLLinePlotItem(pos=self.pts[:, i:j].transpose(), color=pg.glColor(self.colors[index]),

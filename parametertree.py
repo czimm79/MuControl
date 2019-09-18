@@ -131,13 +131,13 @@ class MyParamTree(ParameterTree):
             gamepadEvent (list): incoming list from the controller class of format ['button', val]. ex. ['LJOY', 45]
         """
         func_map = {
-            'BTN_WEST': self.Key_F,
-            'BTN_NORTH': self.Key_G,
-            'BTN_EAST': self.Key_B,
-            'BTN_SOUTH': self.Key_V,
-            'BTN_TL': self.Key_Q,
-            'BTN_TR': self.Key_W,
-            'BTN_THUMBL': self.Key_T,
+            'X': self.Key_F,
+            'Y': self.Key_G,
+            'B': self.Key_B,
+            'A': self.Key_V,
+            'LEFT_SHOULDER': self.Key_Q,
+            'RIGHT_SHOULDER': self.Key_W,
+            'LEFT_THUMB': self.Key_T,
             'LJOY': self.Joystick_Left
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')

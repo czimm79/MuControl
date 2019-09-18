@@ -3,55 +3,74 @@ import nidaqmx
 import pyqtgraph as pg
 
 
-def generate_waves(funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
+class WaveGenerator:
+    """A class containing the wave generating functions.
+
+    Attributes:
+        last_freq (int): a variable which stores the last frequency generated. This allows the wave generator
+            to "know" if it needs to start the next wave chunk a portion through the wave
+        waves_per_chunk (float): How many Hz happens in the writechunksize chunk.
+        start_frac (float): The fraction of wave that was generated on the last chunk
     """
-    Given all signal parameters, a chunk of signal will be calculated and output.
-    Through testing, it seems like adding a DC offset here does not affect the output from the amplifiers.
+    def __init__(self):
+        self.last_freq = None
+        self.waves_per_chunk = None
+        self.start_frac = None
 
-    INPUTS:
-    funcg_rate : the rate at which samples are written from the function generator
-    writechunksize : chunk size of signal to be calculated
-    vmulti : voltage multiplier
-    freq : frequency of wave in Hz
-    camber : camber angle of field
-    zphase : direction of the lowest(?) z point in the field
-    zcoeff : a coefficient to account for zcoils being assymetric in a setup
+    def generate_waves(self, funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
+        """
+        Given all signal parameters, a chunk of signal will be calculated and output.
 
-    OUTPUT:
-    a [3,writechunksize] array of signal data
-    """
-    I = vmulti
-    f = freq
-    ω = 2 * np.pi * f
-    θ = np.radians(camber)
-    ζ = np.radians(zphase)
+        INPUTS:
+        funcg_rate : the rate at which samples are written from the function generator
+        writechunksize : chunk size of signal to be calculated
+        vmulti : voltage multiplier
+        freq : frequency of wave in Hz
+        camber : camber angle of field
+        zphase : direction of the lowest(?) z point in the field
+        zcoeff : a coefficient to account for zcoils being assymetric in a setup
 
-    chunkspersec = funcg_rate // writechunksize  # Should be 10
+        OUTPUT:
+        a [3,writechunksize] array of signal data
+        """
+        # Redefine input variables into shorthand characters
+        I = vmulti
+        f = freq
+        ω = 2 * np.pi * f
+        θ = np.radians(camber)
+        ζ = np.radians(zphase)
 
-    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
+        # Calculate some needed variables
+        chunkspersec = funcg_rate // writechunksize  # Should be 10
 
-    output = np.array([
-        I * (np.sin(ζ) * np.cos(t) - np.sin(θ) * np.cos(ζ) * np.sin(t)),  # x-coils
-        -I * (np.cos(ζ) * np.cos(t) + np.sin(θ) * np.sin(ζ) * np.sin(t)),  # y-coils
-        zcoeff * I * (np.cos(θ) * np.sin(t))  # z-coils
-    ])
-    return output
+        # Store some information about this function call in the class
+        self.last_freq = f
+        self.waves_per_chunk = f / chunkspersec
+        self.start_frac = self.waves_per_chunk % 1
 
+        t = np.linspace(start=0, stop=ω / chunkspersec, num=writechunksize)
 
-def generate_calib_waves(funcg_rate, writechunksize, calib_xamp, calib_yamp, calib_zamp, f=20):
-    """ Generate three sin waves for calibration at 20Hz, 90 degrees out of phase from all."""
+        output = np.array([
+            I * (np.sin(ζ) * np.cos(t) - np.sin(θ) * np.cos(ζ) * np.sin(t)),  # x-coils
+            -I * (np.cos(ζ) * np.cos(t) + np.sin(θ) * np.sin(ζ) * np.sin(t)),  # y-coils
+            zcoeff * I * (np.cos(θ) * np.sin(t))  # z-coils
+        ])
+        return output
 
-    ω = 2 * np.pi * f
+    def generate_calib_waves(self, funcg_rate, writechunksize, calib_xamp, calib_yamp, calib_zamp, f=20):
+        """ Generate three sin waves for calibration at 20Hz, 90 degrees out of phase from all."""
 
-    chunkspersec = funcg_rate // writechunksize  # Should be 10
+        ω = 2 * np.pi * f
 
-    t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
-    output = np.array([
-        calib_xamp * np.cos(t),
-        calib_yamp * np.cos(t + (np.pi / 2)),
-        calib_zamp * np.cos(t + np.pi)
-    ])
-    return output
+        chunkspersec = funcg_rate // writechunksize  # Should be 10
+
+        t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
+        output = np.array([
+            calib_xamp * np.cos(t),
+            calib_yamp * np.cos(t + (np.pi / 2)),
+            calib_zamp * np.cos(t + np.pi)
+        ])
+        return output
 
 
 def find_ni_devices():
