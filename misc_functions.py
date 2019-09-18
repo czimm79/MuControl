@@ -7,15 +7,16 @@ class WaveGenerator:
     """A class containing the wave generating functions.
 
     Attributes:
-        last_freq (int): a variable which stores the last frequency generated. This allows the wave generator
+        last_freq (float): a variable which stores the last frequency generated. This allows the wave generator
             to "know" if it needs to start the next wave chunk a portion through the wave
         waves_per_chunk (float): How many Hz happens in the writechunksize chunk.
         start_frac (float): The fraction of wave that was generated on the last chunk
     """
     def __init__(self):
-        self.last_freq = None
-        self.waves_per_chunk = None
-        self.start_frac = None
+        self.last_freq = 20
+        self.waves_per_chunk = 2.0
+        self.start_frac = 0.0
+        self.counter = 0
 
     def generate_waves(self, funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
         """
@@ -42,19 +43,26 @@ class WaveGenerator:
 
         # Calculate some needed variables
         chunkspersec = funcg_rate // writechunksize  # Should be 10
-
-        # Store some information about this function call in the class
-        self.last_freq = f
-        self.waves_per_chunk = f / chunkspersec
-        self.start_frac = self.waves_per_chunk % 1
+        waves_per_chunk = f / chunkspersec
+        start_frac = waves_per_chunk % 1
 
         t = np.linspace(start=0, stop=ω / chunkspersec, num=writechunksize)
 
+        if self.last_freq != f:  # Then we can start generating waves as normal, starting from y=0
+            self.counter = 0
+            self.last_freq = f
+
+        elif self.last_freq == f:
+            self.counter += 1
+
+        freq_shifter = self.counter * (2 * np.pi * start_frac)
+
         output = np.array([
-            I * (np.sin(ζ) * np.cos(t) - np.sin(θ) * np.cos(ζ) * np.sin(t)),  # x-coils
-            -I * (np.cos(ζ) * np.cos(t) + np.sin(θ) * np.sin(ζ) * np.sin(t)),  # y-coils
-            zcoeff * I * (np.cos(θ) * np.sin(t))  # z-coils
+            I * (np.sin(ζ) * np.cos(t + freq_shifter) - np.sin(θ) * np.cos(ζ) * np.sin(t + freq_shifter)),  # x-coils
+            -I * (np.cos(ζ) * np.cos(t + freq_shifter) + np.sin(θ) * np.sin(ζ) * np.sin(t + freq_shifter)),  # y-coils
+            zcoeff * I * (np.cos(θ) * np.sin(t + freq_shifter))  # z-coils
         ])
+
         return output
 
     def generate_calib_waves(self, funcg_rate, writechunksize, calib_xamp, calib_yamp, calib_zamp, f=20):
