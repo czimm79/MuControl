@@ -14,7 +14,7 @@ from plots import SignalPlot, ThreeDPlot
 from misc_functions import set_style
 
 debug_mode = False     # Switch to either use NI threads or a random data generator.
-fbs_mode = False  # Switch to use either the PyQt5 app starting or the FBS container
+fbs_mode = True  # Switch to use either the PyQt5 app starting or the FBS container
 
 
 class MyWindow(QtGui.QMainWindow):

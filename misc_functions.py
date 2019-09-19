@@ -41,7 +41,7 @@ class WaveGenerator:
         θ = np.radians(camber)
         ζ = np.radians(zphase)
 
-        # Calculate some needed variables
+        # Calculate some needed variables for the rest
         chunkspersec = funcg_rate // writechunksize  # Should be 10
         waves_per_chunk = f / chunkspersec
         start_frac = waves_per_chunk % 1

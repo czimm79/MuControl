@@ -18,6 +18,10 @@ From the introduction of the [MuControl User Guide](https://czimm79.github.io/mu
 
 ## Changelog
 
+#### Version 1.0.4
+Switched controller polling library to XInputs-Python (improves overall app performance.
+Added functionality for non-multiple of 10 frequencies. All integers now produce the correct wave.
+
 #### Version 1.0.3
 Fixed bug where on certain computers the gamepad thread was not being terminated, resulting in a laggy experience. If it does not close, it is now
 forcefully terminated.
