@@ -1,6 +1,12 @@
 # MuControl
-MuControl is a self-contained application intended for the manipulation and monitoring of electric signals for
-3D electromagnet systems. The goal of this app is to:
+
+This repository contains MuControl, an open-source Python application intended for the manipulation and monitoring of electric signals for 3D electromagnet systems. This software was developed as part of the publication
+
+> **An experimental design for the control and assembly of superparamagnetic microwheels** <br/>
+> E.J. Roth, C.J. Zimmermann, D. Disharoon. T.O. Tasci, D.W.M. Marr, K.B. Neeves <br/>
+> In *Review of Scientific Instruments* (to be submitted)
+
+The goal of this app is to:
 
 1. Output calculated signals to a *National Instruments (NI)* function generator to create a constant magnitude
    rotating 3-D magnetic field
