@@ -22,17 +22,17 @@ class WaveGenerator:
         """
         Given all signal parameters, a chunk of signal will be calculated and output.
 
-        INPUTS:
-        funcg_rate : the rate at which samples are written from the function generator
-        writechunksize : chunk size of signal to be calculated
-        vmulti : voltage multiplier
-        freq : frequency of wave in Hz
-        camber : camber angle of field
-        zphase : direction of the lowest(?) z point in the field
-        zcoeff : a coefficient to account for zcoils being assymetric in a setup
+        Args:
+            funcg_rate : the rate at which samples are written from the function generator
+            writechunksize : chunk size of signal to be calculated
+            vmulti : voltage multiplier
+            freq : frequency of wave in Hz
+            camber : camber angle of field
+            zphase : direction of the lowest(?) z point in the field
+            zcoeff : a coefficient to account for zcoils being assymetric in a setup
 
-        OUTPUT:
-        a [3,writechunksize] array of signal data
+        Returns:
+            a [3,writechunksize] array of signal data
         """
         # Redefine input variables into shorthand characters
         I = vmulti

@@ -1,5 +1,6 @@
 # Ignore bytecode cache folder
 __pycache__/
+threads/__pycache__/
 
 # Ignore .idea folder for PyCharm
 .idea/
@@ -9,3 +10,8 @@ __pycache__/
 
 # Ignore scratch
 scratch/
+
+# Ignore doc
+doc/
+
+mucontrolPAPER/
