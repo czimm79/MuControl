@@ -1,7 +1,7 @@
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.parametertree import Parameter, ParameterTree
-from PyQt5.QtCore import Qt
-
+from PyQt5.QtCore import Qt, QEventLoop, QTimer
+import numpy as np
 
 class MyParamTree(ParameterTree):
     """The parameter tree widget that lives in the bottom of the main window.
@@ -123,6 +123,79 @@ class MyParamTree(ParameterTree):
         setbool = not curbool
         self.setParamValue('Toggle Output', setbool)
 
+    def twirl(self):
+        """Rotate the z-phase 360 degrees in a given time."""
+        runs = 5
+        time_between_runs = 0.4
+        time = 0.2  # time in seconds for the zphase to be moved around.
+        steps = 10  # how many steps to divide twirl into
+        time_between_steps = time / steps
+        phase_increment = 360 / steps
+
+        for _ in range(runs):
+            z_phase = self.getParamValue('Z-Phase')
+            for _ in range(steps):
+                z_phase += phase_increment
+
+                self.setParamValue('Z-Phase', z_phase % 360)  # change z-phase
+
+                # sleep using PyQt5
+                loop = QEventLoop()
+                QTimer.singleShot(time_between_steps * 1000, loop.quit)
+                loop.exec_()
+
+            # Sleep between runs
+            loop = QEventLoop()
+            QTimer.singleShot(time_between_runs * 1000, loop.quit)
+            loop.exec_()
+
+    def wiggle(self):
+        """Wiggle the wheel from a positive camber to negative camber to shear wheels apart."""
+        num = 1  # number of wiggles
+        time = 0.1  # time in seconds where the wheel completes a "wiggle" cycle
+        steps = 2  # how many steps to divide one half of the wiggle into
+        time_between_steps = time / steps
+
+        camber = self.getParamValue('Field Camber')
+        camber_increment = (2 * camber) / steps
+
+        for _ in range(num):
+            # Advance positive
+            for _ in range(steps):
+                camber -= camber_increment
+
+                self.setParamValue('Field Camber', camber)  # change z-phase
+
+                # sleep using PyQt5
+                loop = QEventLoop()
+                QTimer.singleShot(time_between_steps * 1000, loop.quit)
+                loop.exec_()
+
+            # Advance negative
+            for _ in range(steps):
+                camber += camber_increment
+
+                self.setParamValue('Field Camber', camber)  # change z-phase
+
+                # sleep using PyQt5
+                loop = QEventLoop()
+                QTimer.singleShot(time_between_steps * 1000, loop.quit)
+                loop.exec_()
+
+    def explode(self):
+        """Explode the wheel by applying an orthogonal camber angle briefly."""
+        camber = self.getParamValue("Field Camber")
+        ortho = camber - 90
+        time = 0.2
+
+        self.setParamValue('Field Camber', ortho)
+        # sleep using PyQt5
+        loop = QEventLoop()
+        QTimer.singleShot(time * 1000, loop.quit)
+        loop.exec_()
+
+        self.setParamValue('Field Camber', camber)
+
     def on_gamepad_event(self, gamepadEvent):
         """
         Parses the incoming gamepad events and forwards it to the appropriate keybind function below.
@@ -138,7 +211,9 @@ class MyParamTree(ParameterTree):
             'LEFT_SHOULDER': self.Key_Q,
             'RIGHT_SHOULDER': self.Key_W,
             'LEFT_THUMB': self.Key_T,
-            'LJOY': self.Joystick_Left
+            'LJOY': self.Joystick_Left,
+            'START': self.explode,
+            'BACK': self.twirl
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')
         if gamepadEvent[0] == 'LJOY':

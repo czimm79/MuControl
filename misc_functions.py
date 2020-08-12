@@ -14,9 +14,9 @@ class WaveGenerator:
     """
     def __init__(self):
         self.last_freq = 20
-        self.waves_per_chunk = 2.0
         self.start_frac = 0.0
         self.counter = 0
+        self.calib_counter = 0
 
     def generate_waves(self, funcg_rate, writechunksize, vmulti, freq, camber, zphase, zcoeff):
         """
@@ -42,7 +42,7 @@ class WaveGenerator:
         ζ = np.radians(zphase)
 
         # Calculate some needed variables for the rest
-        chunkspersec = funcg_rate // writechunksize  # Should be 10
+        chunkspersec = funcg_rate // writechunksize
         waves_per_chunk = f / chunkspersec
         start_frac = waves_per_chunk % 1
 
@@ -70,13 +70,18 @@ class WaveGenerator:
 
         ω = 2 * np.pi * f
 
-        chunkspersec = funcg_rate // writechunksize  # Should be 10
+        chunkspersec = funcg_rate // writechunksize
+        waves_per_chunk = f / chunkspersec  # 20 / 100 = 1/5
+        start_frac = waves_per_chunk % 1
 
-        t = np.linspace(start=0, stop=ω / chunkspersec, num=funcg_rate // chunkspersec)
+        freq_shifter = self.calib_counter * (2 * np.pi * start_frac)
+        self.calib_counter += 1
+
+        t = np.linspace(start=0, stop=ω / chunkspersec, num=writechunksize)
         output = np.array([
-            calib_xamp * np.cos(t),
-            calib_yamp * np.cos(t + (np.pi / 2)),
-            calib_zamp * np.cos(t + np.pi)
+            calib_xamp * np.cos(t + freq_shifter),
+            calib_yamp * np.cos(t + (np.pi / 2) + freq_shifter),
+            calib_zamp * np.cos(t + np.pi + freq_shifter)
         ])
         return output
 

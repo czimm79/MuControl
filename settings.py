@@ -151,7 +151,8 @@ class SettingsWindow(QtWidgets.QDialog):
         self.funcg_name = self.getParamValue('Write Parameters', 'Function Gen. Name')
         self.writechannel_list = ast.literal_eval(self.getParamValue('Write Parameters', 'Write Channel List'))
         self.funcg_rate = int(self.getParamValue('Write Parameters', 'Generation Rate [sps]'))
-        self.writechunksize = self.funcg_rate // 10  # This keeps the frequency of the wave uniform.
+        self.writechunksize = 200
+        print(f'Signal Refresh Rate = {self.funcg_rate / self.writechunksize}')
 
         # DEFAULT SIGNAL VALUES
         self.defaults = {

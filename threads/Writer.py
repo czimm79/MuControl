@@ -32,7 +32,7 @@ class SignalWriter(QtCore.QThread):
         self.funcg_name = funcg_name
         self.writechannel_list = writechannel_list
         self.funcg_rate = funcg_rate
-        self.writechunksize = self.funcg_rate // 10
+        self.writechunksize = writechunksize
         self.zcoeff = zcoeff
 
         # Changing variables

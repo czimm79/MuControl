@@ -63,7 +63,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
         # Initialize signal design variables
         self.funcg_rate = funcg_rate
-        self.writechunksize = writechunksize
+        self.writechunksize = 800  # TODO changed here
         self.vmulti = vmulti
         self.freq = freq
         self.camber = camber
@@ -102,7 +102,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
             self.pts = self.WaveGen.generate_waves(
                 funcg_rate=self.funcg_rate,
-                writechunksize=self.writechunksize,
+                writechunksize=800,  # TODO Changed here
                 vmulti=self.vmulti,
                 freq=10,
                 camber=self.camber,
