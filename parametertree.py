@@ -3,6 +3,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 from PyQt5.QtCore import Qt, QEventLoop, QTimer
 import numpy as np
 
+
 class MyParamTree(ParameterTree):
     """The parameter tree widget that lives in the bottom of the main window.
 
@@ -45,6 +46,8 @@ class MyParamTree(ParameterTree):
 
         # Connect keyPresses
         self.setFocusPolicy(Qt.NoFocus)
+
+        self.running_explode = False
 
     def sendChange(self, param, changes):
         self.paramChange.emit(param, changes)
@@ -185,16 +188,132 @@ class MyParamTree(ParameterTree):
     def explode(self):
         """Explode the wheel by applying an orthogonal camber angle briefly."""
         camber = self.getParamValue("Field Camber")
+        heading = self.getParamValue('Z-Phase')
         ortho = camber - 90
         time = 0.2
 
         self.setParamValue('Field Camber', ortho)
+        if ortho > 91:
+            self.setParamValue('Z-Phase', (heading - 180) % 360)
         # sleep using PyQt5
         loop = QEventLoop()
         QTimer.singleShot(time * 1000, loop.quit)
         loop.exec_()
 
         self.setParamValue('Field Camber', camber)
+        if ortho > 91:
+            self.setParamValue('Z-Phase', heading)
+
+    def explode_toggle(self):
+        time_between_explodes = 0.5
+        self.running_explode = not self.running_explode
+        while self.running_explode:
+            self.explode()
+            # wait
+            loop = QEventLoop()
+            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
+            loop.exec_()
+
+    def switch_sides(self):
+        """Explode the wheel by switching the rotation side."""
+        camber = self.getParamValue("Field Camber")
+        heading = self.getParamValue('Z-Phase')
+        opposite = camber - 180
+        time = 0.5
+
+        self.setParamValue('Field Camber', opposite)
+        self.setParamValue('Z-Phase', (heading - 180) % 360)
+        # sleep using PyQt5
+        loop = QEventLoop()
+        QTimer.singleShot(time * 1000, loop.quit)
+        loop.exec_()
+
+        self.setParamValue('Field Camber', camber)
+        self.setParamValue('Z-Phase', heading)
+
+    def corkscrew(self):
+        """Corkscrew motion."""
+        time = 2.0  # time to complete one spiral
+        forward_steps = 2
+        first_turn_steps = 1
+        backwards_steps = 1
+        second_turn_steps = 1
+        sub_turn_steps = 4  # must be even!
+        steps = forward_steps + first_turn_steps + backwards_steps + second_turn_steps
+        step_time = time / steps  # time for each step of the movement
+        sub_turn_step_time = step_time / sub_turn_steps
+
+        # Use camber of 10 degrees for original
+        start_camber = 30
+        heading = self.getParamValue('Z-Phase')
+
+        # Move forward
+        for step in range(forward_steps):
+            self.setParamValue("Field Camber", start_camber)
+            self.setParamValue("Z-Phase", heading)
+            # sleep using PyQt5
+            loop = QEventLoop()
+            QTimer.singleShot(step_time * 1000, loop.quit)
+            loop.exec_()
+
+        # Make the first turn
+        # I want to duck the camber angle down to 70 degrees then bring it back up for the backwards movement
+        # At the same time, step the heading angle 180 degrees.
+        camber = start_camber
+        bow_camber = 80
+        end_first_turn_heading = (heading - 180)
+        camber_step_length = 2 * (bow_camber - start_camber) / sub_turn_steps
+        heading_step_length = np.abs(heading - end_first_turn_heading) / sub_turn_steps
+
+        # First half of movement, bow down to the high camber angle
+        for step in range(sub_turn_steps // 2):
+            camber += camber_step_length  # step camber
+            heading = (heading - heading_step_length) % 360
+            self.setParamValue('Field Camber', camber)  # set camber
+            self.setParamValue('Z-Phase', heading)  # set heading
+            # pause
+            loop = QEventLoop()
+            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
+            loop.exec_()
+
+        # second half of movement, rise back up to starting camber
+        for step in range(sub_turn_steps // 2):
+            camber -= camber_step_length  # step camber
+            heading = (heading - heading_step_length) % 360
+            self.setParamValue('Field Camber', camber)  # set camber
+            self.setParamValue('Z-Phase', heading)  # set heading
+            # pause
+            loop = QEventLoop()
+            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
+            loop.exec_()
+
+        # Move backward
+        for step in range(backwards_steps):
+            # wait
+            loop = QEventLoop()
+            QTimer.singleShot(step_time * 1000, loop.quit)
+            loop.exec_()
+
+        # Perform second turn
+        for step in range(sub_turn_steps // 2):
+            camber += camber_step_length  # step camber
+            heading = (heading - heading_step_length) % 360
+            self.setParamValue('Field Camber', camber)  # set camber
+            self.setParamValue('Z-Phase', heading)  # set heading
+            # pause
+            loop = QEventLoop()
+            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
+            loop.exec_()
+
+        for step in range(sub_turn_steps // 2):
+            camber -= camber_step_length  # step camber
+            heading = (heading - heading_step_length) % 360
+            self.setParamValue('Field Camber', camber)  # set camber
+            self.setParamValue('Z-Phase', heading)  # set heading
+            # pause
+            loop = QEventLoop()
+            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
+            loop.exec_()
 
     def on_gamepad_event(self, gamepadEvent):
         """
@@ -213,7 +332,7 @@ class MyParamTree(ParameterTree):
             'LEFT_THUMB': self.Key_T,
             'LJOY': self.Joystick_Left,
             'START': self.explode,
-            'BACK': self.twirl
+            'BACK': self.explode_toggle
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')
         if gamepadEvent[0] == 'LJOY':
