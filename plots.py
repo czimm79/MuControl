@@ -15,7 +15,7 @@ class SignalPlot(pg.PlotWidget):
     def __init__(self):
         super().__init__()
         self.line_width = 1
-        self.curve_colors = ['b', 'g', 'r', 'c', 'y', 'm']
+        self.curve_colors = ['b', 'g', 'r', 'c', 'k', 'm']
         self.pens = [pg.mkPen(i, width=self.line_width) for i in self.curve_colors]
 
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # By default the plot is the keyboard focus

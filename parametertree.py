@@ -52,7 +52,7 @@ class MyParamTree(ParameterTree):
     def sendChange(self, param, changes):
         self.paramChange.emit(param, changes)
 
-    # Convienience methods for modifying parameter values.
+    # Convenience methods for modifying parameter values.
     def getParamValue(self, child, branch='Signal Design Parameters'):
         """Get the current value of a parameter."""
         return self.p.param(branch, child).value()
@@ -190,22 +190,53 @@ class MyParamTree(ParameterTree):
         camber = self.getParamValue("Field Camber")
         heading = self.getParamValue('Z-Phase')
         ortho = camber - 90
-        time = 0.2
-
+        time = 0.2  # default 0.2
+        #multi = self.getParamValue('Voltage Multiplier')
+        # Tilt
         self.setParamValue('Field Camber', ortho)
-        if ortho > 91:
+        #self.setParamValue('Voltage Multiplier', 3.0)
+        if np.abs(ortho) > 91:
             self.setParamValue('Z-Phase', (heading - 180) % 360)
+
         # sleep using PyQt5
         loop = QEventLoop()
         QTimer.singleShot(time * 1000, loop.quit)
         loop.exec_()
 
+        # Reset
         self.setParamValue('Field Camber', camber)
-        if ortho > 91:
+        #self.setParamValue('Voltage Multiplier', multi)
+        if np.abs(ortho) > 91:
             self.setParamValue('Z-Phase', heading)
 
+    
+    def tumble(self):
+        """A field similar to explode, but does not flip the rotation direction. Instead, it turns the zphase 90 degrees."""
+        camber = self.getParamValue("Field Camber")
+        heading = self.getParamValue('Z-Phase')
+        ortho = camber - 90
+        time = 0.15
+        # multi = self.getParamValue('Voltage Multiplier')
+        
+        # Tilt
+        self.setParamValue('Field Camber', ortho)
+        #self.setParamValue('Voltage Multiplier', 3.0)
+        new_heading = (heading - 90) % 360
+        self.setParamValue('Z-Phase', new_heading)
+
+
+        # sleep using PyQt5
+        loop = QEventLoop()
+        QTimer.singleShot(time * 1000, loop.quit)
+        loop.exec_()
+
+        # Reset
+        self.setParamValue('Field Camber', camber)
+        self.setParamValue('Z-Phase', heading)
+        #self.setParamValue('Voltage Multiplier', multi)
+
     def explode_toggle(self):
-        time_between_explodes = 0.5
+        time_between_explodes = 0.5  # default 0.5
         self.running_explode = not self.running_explode
         while self.running_explode:
             self.explode()
@@ -213,6 +244,41 @@ class MyParamTree(ParameterTree):
             loop = QEventLoop()
             QTimer.singleShot(time_between_explodes * 1000, loop.quit)
             loop.exec_()
+
+    def climb(self, original_heading):
+        """A swarm field that specializes in climbing."""
+        wiggle_angle = 35
+        time = 0.2
+        # multi = self.getParamValue('Voltage Multiplier')
+        
+        # turn left
+        new_heading_1 = (original_heading - wiggle_angle) % 360
+        self.setParamValue('Z-Phase', new_heading_1)
+
+        # sleep using PyQt5
+        loop = QEventLoop()
+        QTimer.singleShot(time * 1000, loop.quit)
+        loop.exec_()
+
+        # turn right
+        new_heading_2 = (original_heading + wiggle_angle) % 360
+        self.setParamValue('Z-Phase', new_heading_2)
+
+
+    def toggle_climb(self):
+        """toggle the climb field, resetting back to heading when done."""
+        time_between_explodes = 0.2  # default 0.5
+        self.running_explode = not self.running_explode
+        original_heading = self.getParamValue('Z-Phase')
+        while self.running_explode:
+            self.climb(original_heading)
+            # wait
+            loop = QEventLoop()
+            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
+            loop.exec_()
+
+        # reset back to original heading
+        self.setParamValue('Z-Phase', original_heading)
 
     def switch_sides(self):
         """Explode the wheel by switching the rotation side."""
@@ -257,7 +323,7 @@ class MyParamTree(ParameterTree):
             loop.exec_()
 
         # Make the first turn
-        # I want to duck the camber angle down to 70 degrees then bring it back up for the backwards movement
+        # I want to duck the camber angle down to 80 degrees then bring it back up for the backwards movement
         # At the same time, step the heading angle 180 degrees.
         camber = start_camber
         bow_camber = 80
@@ -315,6 +381,61 @@ class MyParamTree(ParameterTree):
             QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
             loop.exec_()
 
+    def my_corkscrew(self):
+        """My version of the corkscrew motion, described in signal_sandbox notebook."""
+        print('running corkscrew')
+        z_start = self.getParamValue('Z-Phase')
+        camber = self.getParamValue('Field Camber')
+        camber_max = 70
+        total_steps = 10  # Must be an even number
+        camber_half_steps = (camber_max - camber) / (total_steps // 2)
+
+        total_time = 1.0
+        step_time = total_time / total_steps
+        alpha = 0.4
+        beta = total_time - alpha
+        a = 360 / (2 * beta + alpha)
+
+        time = np.linspace(0, total_time, num=total_steps)
+        time_alpha = np.where(time <= alpha, time, np.nan)
+        time_beta = np.where(time > alpha, time, np.nan)
+
+        for seconds in time:  
+            # Calculate z_phase given current time
+            if seconds <= alpha:
+                z_phase = a * seconds + z_start
+            elif seconds > alpha:
+                z_phase = 2 * a * seconds - a * alpha + z_start
+            else:
+                print('Something went terribly wrong with the corkscrew code.')
+
+            # Calculate camber angle
+            if seconds <= total_time / 2: # first half of time steps, bow down camber
+                camber += camber_half_steps
+            elif seconds > total_time / 2: # second half, rise up
+                camber -= camber_half_steps
+
+            print(z_phase)
+            print(camber)
+            self.setParamValue('Z-Phase', z_phase % 360)  # set z-phase
+            self.setParamValue('Field Camber', camber)  # set camber
+
+            # Wait
+            loop = QEventLoop()
+            QTimer.singleShot(step_time * 1000, loop.quit)
+            loop.exec_()
+
+    def toggle_my_corkscrew(self):
+        time_between_explodes = 0.01
+        self.running_explode = not self.running_explode
+        while self.running_explode:
+            self.my_corkscrew()
+            # wait
+            loop = QEventLoop()
+            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
+            loop.exec_()
+
+        
     def on_gamepad_event(self, gamepadEvent):
         """
         Parses the incoming gamepad events and forwards it to the appropriate keybind function below.
@@ -331,8 +452,8 @@ class MyParamTree(ParameterTree):
             'RIGHT_SHOULDER': self.Key_W,
             'LEFT_THUMB': self.Key_T,
             'LJOY': self.Joystick_Left,
-            'START': self.explode,
-            'BACK': self.explode_toggle
+            'START': self.toggle_climb,
+            'BACK': self.toggle_my_corkscrew
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')
         if gamepadEvent[0] == 'LJOY':
