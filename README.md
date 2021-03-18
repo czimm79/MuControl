@@ -4,7 +4,8 @@ This repository contains MuControl, an open-source Python application intended f
 
 > **An experimental design for the control and assembly of superparamagnetic microwheels** <br/>
 > E.J. Roth, C.J. Zimmermann, D. Disharoon. T.O. Tasci, D.W.M. Marr, K.B. Neeves <br/>
-> In *Review of Scientific Instruments* (to be submitted)
+> Review of Scientific Instruments (2020).
+
 
 The goal of this app is to:
 
@@ -24,6 +25,19 @@ From the introduction of the [MuControl User Guide](https://czimm79.github.io/mu
 
 ## Changelog
 
+#### Version 1.1
+
+* Added swarm modalities -> Rolling, Corkscrew, Flipping, Switchback.
+* Increased signal refresh rate to 40 1/s to allow for more complex swarm modalities.
+* Switchback swarm can now be directed in any arbitrary direction during motion.
+* Parameter Tree updated to allow for switching of swarm modalities, keybinds added and listed in UI.
+* Code for swarm modalities renamed to ones that will be mentioned in my paper.
+
+* Removed the setting for write signal generation rate, moving it to Python only modification.
+* Moved the WaveGenerator class containing the field math to more appropriately named `waves.py`
+* Refactored Qt compatible sleeps into a clean function in `misc_functions.py`
+
+
 #### Version 1.0.4
 Switched controller polling library to XInputs-Python (improves overall app performance).
 Added functionality for non-multiple of 10 frequencies. All integers now produce the correct wave.
@@ -42,5 +56,5 @@ is included and located in the help menu.
 
 
 ## Extra Info
-Written by Coy Zimmermann in 2019 as part of my PhD thesis work on magnetically propelled microwheels in Dr. David W.M.
+Written by Coy Zimmermann in 2019-2021 as part of my PhD thesis work on magnetically propelled microwheels in Dr. David W.M.
 Marr's group at the Colorado School of Mines.

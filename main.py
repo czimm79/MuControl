@@ -29,7 +29,6 @@ class MyWindow(QtGui.QMainWindow):
     """
 
     def __init__(self):
-
         super().__init__()  # Inherit everything from the Qt "QMainWindow" class
 
         # Instantiate class in settings.py which contains the settings UI AND the persistent QSettings values
@@ -103,14 +102,14 @@ class MyWindow(QtGui.QMainWindow):
             <span style="font-size: 10pt;">To enable keyboard controls, left click once anywhere on the signal plot. </span> \
             <p> <strong> Toggle Output:  </strong> T; <strong> +Voltage Multiplier: </strong> W; <strong> -Voltage Multiplier: </strong> Q </p> \
             <p> <strong> +Frequency: </strong> G, <strong> -Frequency: </strong> F; <strong> +Camber: </strong> B; \
-            <strong> -Camber: </strong> V </p>'
+            <strong> -Camber: </strong> V; ,<strong> Toggle Swarm: </strong> U</p>'
         )
         self.gamepadlbl = QtWidgets.QLabel(
             '<h3> Gamepad Controls </h3>\
             <span style="font-size: 10pt;">To enable gamepad controls, plug in the controller before starting the program. </span> \
             <p> <strong> Toggle Output:  </strong> Left Thumb Click; <strong> +Voltage Multiplier: </strong> RB; <strong> -Voltage Multiplier: </strong> LB </p> \
             <p> <strong> +Frequency: </strong> Y, <strong> -Frequency: </strong> X; <strong> +Camber: </strong> B; \
-            <strong> -Camber: </strong> A </p>'
+            <strong> -Camber: </strong> A; <strong> Toggle Swarm: </strong> START </p>'
         )
         # self.keyboardlbl.setFont(QtGui.QFont("Default", 11))  # Optionally, change font size
         # self.gamepadlbl.setFont(QtGui.QFont("Default", 11))

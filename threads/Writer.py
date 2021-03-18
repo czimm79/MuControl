@@ -2,7 +2,8 @@ import numpy as np
 from pyqtgraph.Qt import QtCore
 import nidaqmx
 from nidaqmx.stream_writers import AnalogMultiChannelWriter
-from misc_functions import WaveGenerator, find_ni_devices
+from waves import WaveGenerator
+from misc_functions import find_ni_devices
 
 
 class SignalWriter(QtCore.QThread):

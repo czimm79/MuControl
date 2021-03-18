@@ -2,7 +2,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore
 import numpy as np
 import pyqtgraph.opengl as gl
-from misc_functions import WaveGenerator
+from waves import WaveGenerator
 
 
 class SignalPlot(pg.PlotWidget):
@@ -63,7 +63,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
         # Initialize signal design variables
         self.funcg_rate = funcg_rate
-        self.writechunksize = 800  # TODO changed here
+        self.CIRCLEPLOTwritechunksize = 800
         self.vmulti = vmulti
         self.freq = freq
         self.camber = camber
@@ -71,7 +71,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
         self.pts = self.WaveGen.generate_waves(
             funcg_rate=self.funcg_rate,
-            writechunksize=self.writechunksize,
+            writechunksize=self.CIRCLEPLOTwritechunksize,
             vmulti=self.vmulti,
             freq=self.freq,
             camber=self.camber,
@@ -102,7 +102,7 @@ class ThreeDPlot(gl.GLViewWidget):
 
             self.pts = self.WaveGen.generate_waves(
                 funcg_rate=self.funcg_rate,
-                writechunksize=800,  # TODO Changed here
+                writechunksize=self.CIRCLEPLOTwritechunksize,
                 vmulti=self.vmulti,
                 freq=10,
                 camber=self.camber,
@@ -122,11 +122,3 @@ class ThreeDPlot(gl.GLViewWidget):
                                          width=5, antialias=True)
                 self.addItem(line)
                 self.last_lines.append(line)
-
-            # Plot a cone
-            # cone_mesh_data = gl.MeshData.cylinder(10, 10, radius=[0.01, 0.5], length=1)
-            # cone = gl.GLMeshItem(meshdata=cone_mesh_data, color=pg.glColor('c'), edgeColor=pg.glColor('w'))
-            # cone.translate(0, 5, 0)
-            # cone.rotate(45, 0, 0, 0, local=True)
-            # self.addItem(cone)
-            # self.last_lines.append(cone)

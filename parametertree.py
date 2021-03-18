@@ -1,8 +1,8 @@
 from pyqtgraph.Qt import QtCore
 from pyqtgraph.parametertree import Parameter, ParameterTree
-from PyQt5.QtCore import Qt, QEventLoop, QTimer
+from PyQt5.QtCore import Qt
 import numpy as np
-
+from misc_functions import qtsleep
 
 class MyParamTree(ParameterTree):
     """The parameter tree widget that lives in the bottom of the main window.
@@ -26,7 +26,8 @@ class MyParamTree(ParameterTree):
                 {'name': 'Voltage Multiplier', 'type': 'float', 'value': config.defaults['vmulti'], 'step': 0.25},
                 {'name': 'Frequency', 'type': 'float', 'value': config.defaults['freq'], 'step': 10, 'siPrefix': True, 'suffix': 'Hz'},
                 {'name': 'Z-Phase', 'type': 'float', 'value': config.defaults['zphase'], 'step': 90},
-                {'name': 'Field Camber', 'type': 'int', 'value': config.defaults['camber'], 'step': 1, 'siPrefix': True, 'suffix': '°'}
+                {'name': 'Field Camber', 'type': 'int', 'value': config.defaults['camber'], 'step': 1, 'siPrefix': True, 'suffix': '°'},
+                {'name': 'Swarm Mode', 'type': 'list', 'values': ['Rolling', 'Corkscrew', 'Flipping', 'Switchback'], 'value': 'Rolling'}
             ]},
             {'name': 'Calibration', 'type': 'group', 'children': [
                 {'name': 'Output Mode', 'type': 'list', 'values': ['Normal', 'Calibration'], 'value': 'Normal'},
@@ -84,7 +85,8 @@ class MyParamTree(ParameterTree):
             qtk.Key_V: self.Key_V,
             qtk.Key_Q: self.Key_Q,
             qtk.Key_W: self.Key_W,
-            qtk.Key_T: self.Key_T
+            qtk.Key_T: self.Key_T,
+            qtk.Key_U: self.Key_U
         }
         func = func_map.get(key, lambda: 'Not bound yet')
         return func()
@@ -126,64 +128,8 @@ class MyParamTree(ParameterTree):
         setbool = not curbool
         self.setParamValue('Toggle Output', setbool)
 
-    def twirl(self):
-        """Rotate the z-phase 360 degrees in a given time."""
-        runs = 5
-        time_between_runs = 0.4
-        time = 0.2  # time in seconds for the zphase to be moved around.
-        steps = 10  # how many steps to divide twirl into
-        time_between_steps = time / steps
-        phase_increment = 360 / steps
-
-        for _ in range(runs):
-            z_phase = self.getParamValue('Z-Phase')
-            for _ in range(steps):
-                z_phase += phase_increment
-
-                self.setParamValue('Z-Phase', z_phase % 360)  # change z-phase
-
-                # sleep using PyQt5
-                loop = QEventLoop()
-                QTimer.singleShot(time_between_steps * 1000, loop.quit)
-                loop.exec_()
-
-            # Sleep between runs
-            loop = QEventLoop()
-            QTimer.singleShot(time_between_runs * 1000, loop.quit)
-            loop.exec_()
-
-    def wiggle(self):
-        """Wiggle the wheel from a positive camber to negative camber to shear wheels apart."""
-        num = 1  # number of wiggles
-        time = 0.1  # time in seconds where the wheel completes a "wiggle" cycle
-        steps = 2  # how many steps to divide one half of the wiggle into
-        time_between_steps = time / steps
-
-        camber = self.getParamValue('Field Camber')
-        camber_increment = (2 * camber) / steps
-
-        for _ in range(num):
-            # Advance positive
-            for _ in range(steps):
-                camber -= camber_increment
-
-                self.setParamValue('Field Camber', camber)  # change z-phase
-
-                # sleep using PyQt5
-                loop = QEventLoop()
-                QTimer.singleShot(time_between_steps * 1000, loop.quit)
-                loop.exec_()
-
-            # Advance negative
-            for _ in range(steps):
-                camber += camber_increment
-
-                self.setParamValue('Field Camber', camber)  # change z-phase
-
-                # sleep using PyQt5
-                loop = QEventLoop()
-                QTimer.singleShot(time_between_steps * 1000, loop.quit)
-                loop.exec_()
+    def Key_U(self):
+        self.toggle_swarm()
 
     def explode(self):
         """Explode the wheel by applying an orthogonal camber angle briefly."""
@@ -191,195 +137,69 @@ class MyParamTree(ParameterTree):
         heading = self.getParamValue('Z-Phase')
         ortho = camber - 90
         time = 0.2  # default 0.2
-        #multi = self.getParamValue('Voltage Multiplier')
+
         # Tilt
         self.setParamValue('Field Camber', ortho)
-        #self.setParamValue('Voltage Multiplier', 3.0)
         if np.abs(ortho) > 91:
             self.setParamValue('Z-Phase', (heading - 180) % 360)
 
-        # sleep using PyQt5
-        loop = QEventLoop()
-        QTimer.singleShot(time * 1000, loop.quit)
-        loop.exec_()
+        qtsleep(time)  # sleep using PyQt5
+
 
         # Reset
         self.setParamValue('Field Camber', camber)
-        #self.setParamValue('Voltage Multiplier', multi)
         if np.abs(ortho) > 91:
             self.setParamValue('Z-Phase', heading)
 
-    
-    def tumble(self):
-        """A field similar to explode, but does not flip the rotation direction. Instead, it turns the zphase 90 degrees."""
-        camber = self.getParamValue("Field Camber")
-        heading = self.getParamValue('Z-Phase')
-        ortho = camber - 90
-        time = 0.15
-        # multi = self.getParamValue('Voltage Multiplier')
-        
-        # Tilt
-        self.setParamValue('Field Camber', ortho)
-        #self.setParamValue('Voltage Multiplier', 3.0)
-        new_heading = (heading - 90) % 360
-        self.setParamValue('Z-Phase', new_heading)
-
-
-        # sleep using PyQt5
-        loop = QEventLoop()
-        QTimer.singleShot(time * 1000, loop.quit)
-        loop.exec_()
-
-        # Reset
-        self.setParamValue('Field Camber', camber)
-        self.setParamValue('Z-Phase', heading)
-        #self.setParamValue('Voltage Multiplier', multi)
-
-    def explode_toggle(self):
+    def toggle_explode(self):
         time_between_explodes = 0.5  # default 0.5
         self.running_explode = not self.running_explode
         while self.running_explode:
             self.explode()
-            # wait
-            loop = QEventLoop()
-            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
-            loop.exec_()
 
-    def climb(self, original_heading):
-        """A swarm field that specializes in climbing."""
-        wiggle_angle = 35
-        time = 0.2
-        # multi = self.getParamValue('Voltage Multiplier')
+            qtsleep(time_between_explodes)  # wait
+
+
+    def switchback(self, time, driving_heading, wiggle_angle):
+        """Switchback swarm execution code.
+
+        Args:
+            time (float): time constant between each turn
+            driving_heading (int): uphill direction, overall movement direction
+            wiggle_angle (int): deviation from centerline, determines angle of switchbacks
+        """
         
         # turn left
-        new_heading_1 = (original_heading - wiggle_angle) % 360
+        new_heading_1 = (driving_heading - wiggle_angle) % 360
         self.setParamValue('Z-Phase', new_heading_1)
-
-        # sleep using PyQt5
-        loop = QEventLoop()
-        QTimer.singleShot(time * 1000, loop.quit)
-        loop.exec_()
+        qtsleep(time)  # sleep using PyQt5
 
         # turn right
-        new_heading_2 = (original_heading + wiggle_angle) % 360
+        new_heading_2 = (driving_heading + wiggle_angle) % 360
         self.setParamValue('Z-Phase', new_heading_2)
+        qtsleep(time)
 
+    def toggle_switchback(self):
+        """Toggle the switchback field."""
+        time_between_turn = 0.2
+        wiggle_angle = 35
 
-    def toggle_climb(self):
-        """toggle the climb field, resetting back to heading when done."""
-        time_between_explodes = 0.2  # default 0.5
         self.running_explode = not self.running_explode
-        original_heading = self.getParamValue('Z-Phase')
+        driving_heading = self.getParamValue('Z-Phase')
         while self.running_explode:
-            self.climb(original_heading)
-            # wait
-            loop = QEventLoop()
-            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
-            loop.exec_()
+            self.switchback(time_between_turn, driving_heading, wiggle_angle)
+
+            # After running climb at least once, the wheel is currently in `right` formation. To update the driving heading, we'll
+            # read what it is now, and subtract the wiggle angle.
+            # driving_heading = (self.getParamValue('Z-Phase') - wiggle_angle) % 360
+
+            # If there has been a change to the z-phase from the user, update the driving heading.
+            if driving_heading != (self.getParamValue('Z-Phase') - wiggle_angle) % 360:
+                driving_heading = self.getParamValue('Z-Phase')
 
         # reset back to original heading
-        self.setParamValue('Z-Phase', original_heading)
+        self.setParamValue('Z-Phase', driving_heading)
 
-    def switch_sides(self):
-        """Explode the wheel by switching the rotation side."""
-        camber = self.getParamValue("Field Camber")
-        heading = self.getParamValue('Z-Phase')
-        opposite = camber - 180
-        time = 0.5
-
-        self.setParamValue('Field Camber', opposite)
-        self.setParamValue('Z-Phase', (heading - 180) % 360)
-        # sleep using PyQt5
-        loop = QEventLoop()
-        QTimer.singleShot(time * 1000, loop.quit)
-        loop.exec_()
-
-        self.setParamValue('Field Camber', camber)
-        self.setParamValue('Z-Phase', heading)
-
-    def corkscrew(self):
-        """Corkscrew motion."""
-        time = 2.0  # time to complete one spiral
-        forward_steps = 2
-        first_turn_steps = 1
-        backwards_steps = 1
-        second_turn_steps = 1
-        sub_turn_steps = 4  # must be even!
-        steps = forward_steps + first_turn_steps + backwards_steps + second_turn_steps
-        step_time = time / steps  # time for each step of the movement
-        sub_turn_step_time = step_time / sub_turn_steps
-
-        # Use camber of 10 degrees for original
-        start_camber = 30
-        heading = self.getParamValue('Z-Phase')
-
-        # Move forward
-        for step in range(forward_steps):
-            self.setParamValue("Field Camber", start_camber)
-            self.setParamValue("Z-Phase", heading)
-            # sleep using PyQt5
-            loop = QEventLoop()
-            QTimer.singleShot(step_time * 1000, loop.quit)
-            loop.exec_()
-
-        # Make the first turn
-        # I want to duck the camber angle down to 80 degrees then bring it back up for the backwards movement
-        # At the same time, step the heading angle 180 degrees.
-        camber = start_camber
-        bow_camber = 80
-        end_first_turn_heading = (heading - 180)
-        camber_step_length = 2 * (bow_camber - start_camber) / sub_turn_steps
-        heading_step_length = np.abs(heading - end_first_turn_heading) / sub_turn_steps
-
-        # First half of movement, bow down to the high camber angle
-        for step in range(sub_turn_steps // 2):
-            camber += camber_step_length  # step camber
-            heading = (heading - heading_step_length) % 360
-            self.setParamValue('Field Camber', camber)  # set camber
-            self.setParamValue('Z-Phase', heading)  # set heading
-            # pause
-            loop = QEventLoop()
-            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
-            loop.exec_()
-
-        # second half of movement, rise back up to starting camber
-        for step in range(sub_turn_steps // 2):
-            camber -= camber_step_length  # step camber
-            heading = (heading - heading_step_length) % 360
-            self.setParamValue('Field Camber', camber)  # set camber
-            self.setParamValue('Z-Phase', heading)  # set heading
-            # pause
-            loop = QEventLoop()
-            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
-            loop.exec_()
-
-        # Move backward
-        for step in range(backwards_steps):
-            # wait
-            loop = QEventLoop()
-            QTimer.singleShot(step_time * 1000, loop.quit)
-            loop.exec_()
-
-        # Perform second turn
-        for step in range(sub_turn_steps // 2):
-            camber += camber_step_length  # step camber
-            heading = (heading - heading_step_length) % 360
-            self.setParamValue('Field Camber', camber)  # set camber
-            self.setParamValue('Z-Phase', heading)  # set heading
-            # pause
-            loop = QEventLoop()
-            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
-            loop.exec_()
-
-        for step in range(sub_turn_steps // 2):
-            camber -= camber_step_length  # step camber
-            heading = (heading - heading_step_length) % 360
-            self.setParamValue('Field Camber', camber)  # set camber
-            self.setParamValue('Z-Phase', heading)  # set heading
-            # pause
-            loop = QEventLoop()
-            QTimer.singleShot(sub_turn_step_time * 1000, loop.quit)
-            loop.exec_()
 
     def my_corkscrew(self):
         """My version of the corkscrew motion, described in signal_sandbox notebook."""
@@ -397,8 +217,6 @@ class MyParamTree(ParameterTree):
         a = 360 / (2 * beta + alpha)
 
         time = np.linspace(0, total_time, num=total_steps)
-        time_alpha = np.where(time <= alpha, time, np.nan)
-        time_beta = np.where(time > alpha, time, np.nan)
 
         for seconds in time:  
             # Calculate z_phase given current time
@@ -421,21 +239,30 @@ class MyParamTree(ParameterTree):
             self.setParamValue('Field Camber', camber)  # set camber
 
             # Wait
-            loop = QEventLoop()
-            QTimer.singleShot(step_time * 1000, loop.quit)
-            loop.exec_()
+            qtsleep(step_time)
 
     def toggle_my_corkscrew(self):
         time_between_explodes = 0.01
         self.running_explode = not self.running_explode
         while self.running_explode:
             self.my_corkscrew()
-            # wait
-            loop = QEventLoop()
-            QTimer.singleShot(time_between_explodes * 1000, loop.quit)
-            loop.exec_()
+            
+            qtsleep(time_between_explodes)  # wait
 
         
+    def toggle_swarm(self):
+        swarm = self.getParamValue('Swarm Mode')
+
+        if swarm == 'Corkscrew':
+            self.toggle_my_corkscrew()
+        elif swarm == 'Flipping':
+            self.toggle_explode()
+        elif swarm == 'Switchback':
+            self.toggle_switchback()
+        elif swarm == 'Rolling':
+            return
+
+
     def on_gamepad_event(self, gamepadEvent):
         """
         Parses the incoming gamepad events and forwards it to the appropriate keybind function below.
@@ -452,8 +279,8 @@ class MyParamTree(ParameterTree):
             'RIGHT_SHOULDER': self.Key_W,
             'LEFT_THUMB': self.Key_T,
             'LJOY': self.Joystick_Left,
-            'START': self.toggle_climb,
-            'BACK': self.toggle_my_corkscrew
+            'START': self.toggle_swarm
+            # 'BACK': self.toggle_my_corkscrew
         }
         func = func_map.get(gamepadEvent[0], lambda: 'Not bound yet')
         if gamepadEvent[0] == 'LJOY':

@@ -33,8 +33,7 @@ class SettingsWindow(QtWidgets.QDialog):
             ]},
             {'name': 'Write Parameters', 'type': 'group', 'children': [
                 {'name': 'Function Gen. Name', 'type': 'str', 'value': "cDAQ1Mod1"},
-                {'name': 'Write Channel List', 'type': 'str', 'value': '[0, 1, 2]'},
-                {'name': 'Generation Rate [sps]', 'type': 'int', 'value': 8000}
+                {'name': 'Write Channel List', 'type': 'str', 'value': '[0, 1, 2]'}
             ]},
             {'name': 'Default Signal Values', 'type': 'group', 'children': [
                 {'name': 'Z-Coefficient', 'type': 'float', 'value': 0.653, 'step': 0.001},
@@ -64,16 +63,15 @@ class SettingsWindow(QtWidgets.QDialog):
             ]},
             {'name': 'Write Parameters', 'type': 'group', 'children': [
                 {'name': 'Function Gen. Name', 'type': 'str', 'value': self.qsettings.value(self.qss[4])},
-                {'name': 'Write Channel List', 'type': 'str', 'value': self.qsettings.value(self.qss[5])},
-                {'name': 'Generation Rate [sps]', 'type': 'int', 'value': self.qsettings.value(self.qss[6])}
+                {'name': 'Write Channel List', 'type': 'str', 'value': self.qsettings.value(self.qss[5])}
             ]},
             {'name': 'Default Signal Values', 'type': 'group', 'children': [
-                {'name': 'Z-Coefficient', 'type': 'float', 'value': self.qsettings.value(self.qss[7]), 'step': 0.001},
-                {'name': 'Voltage Multiplier', 'type': 'float', 'value': self.qsettings.value(self.qss[8]), 'step': 0.25},
-                {'name': 'Frequency', 'type': 'float', 'value': self.qsettings.value(self.qss[9]), 'step': 10,
+                {'name': 'Z-Coefficient', 'type': 'float', 'value': self.qsettings.value(self.qss[6]), 'step': 0.001},
+                {'name': 'Voltage Multiplier', 'type': 'float', 'value': self.qsettings.value(self.qss[7]), 'step': 0.25},
+                {'name': 'Frequency', 'type': 'float', 'value': self.qsettings.value(self.qss[8]), 'step': 10,
                  'siPrefix': True, 'suffix': 'Hz'},
-                {'name': 'Z-Phase', 'type': 'int', 'value': self.qsettings.value(self.qss[10]), 'step': 1},
-                {'name': 'Field Camber', 'type': 'int', 'value': self.qsettings.value(self.qss[11]), 'step': 1,
+                {'name': 'Z-Phase', 'type': 'int', 'value': self.qsettings.value(self.qss[9]), 'step': 1},
+                {'name': 'Field Camber', 'type': 'int', 'value': self.qsettings.value(self.qss[10]), 'step': 1,
                  'siPrefix': True, 'suffix': '°'}
             ]}
         ]
@@ -150,9 +148,9 @@ class SettingsWindow(QtWidgets.QDialog):
         # WRITE
         self.funcg_name = self.getParamValue('Write Parameters', 'Function Gen. Name')
         self.writechannel_list = ast.literal_eval(self.getParamValue('Write Parameters', 'Write Channel List'))
-        self.funcg_rate = int(self.getParamValue('Write Parameters', 'Generation Rate [sps]'))
+        self.funcg_rate = 8000 
         self.writechunksize = 200
-        print(f'Signal Refresh Rate = {self.funcg_rate / self.writechunksize}')
+        print(f'Signal Refresh Rate = {self.funcg_rate / self.writechunksize}')  # Should print 40, as 8000 sps / 200 chunks = 40 updates per second
 
         # DEFAULT SIGNAL VALUES
         self.defaults = {
