@@ -5,7 +5,7 @@ from time import sleep
 
 # Custom modules
 from threads.DataGenerator import Generator
-from ParameterTree import MyParamTree
+from parametertree import MyParamTree
 from settings import SettingsWindow
 from threads.Reader import SignalReader
 from threads.Writer import SignalWriter
