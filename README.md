@@ -6,22 +6,16 @@ This repository contains MuControl, an open-source Python application intended f
 > E.J. Roth, C.J. Zimmermann, D. Disharoon. T.O. Tasci, D.W.M. Marr, K.B. Neeves <br/>
 > Review of Scientific Instruments (2020).
 
+and version 1.1 was used extensively in the publication
 
-The goal of this app is to:
+> **Multimodal Microwheel Swarms for Targeting in Three-Dimensional Networks** <br/>
+> C.J. Zimmermann, P. Herson, K.B. Neeves, D.W.M. Marr <br/>
+> Submitted (2021).
 
-1. Output calculated signals to a *National Instruments (NI)* function generator to create a constant magnitude
-   rotating 3-D magnetic field
-2. Monitor the signals using a data acquisition card (NI) and resistor array (physical setup not covered in this guide)
-   by plotting the input live
-3. Allow for field parameters to be easily adjusted by using a graphical user interface, keyboard, or gamepad
-4. Eliminate the need for the user to have any coding knowledge
-5. Provide easy to understand visualizations
-6. Eliminate the performance issues and frequent crashes of MATLAB
-7. Provide a platform that can be extended with more features and advanced functionality (gradient tracking,
-   computer vision, corkscrew modalities)
+
+This application uses Qt for GUI, fbs for building executables, and nidaqmx for interfacing with National Instruments function generation and signal aquisition equipment. For more detail, please see the *Review of Scientific Instruments* publication.
    
-From the introduction of the [MuControl User Guide](https://czimm79.github.io/mucontrol-userguide/index.html).
-
+[MuControl User Guide](https://czimm79.github.io/mucontrol-userguide/index.html) 
 
 ## Changelog
 
