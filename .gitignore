@@ -1,3 +1,4 @@
 # Ignore bytecode cache folder
 __pycache__/
 threads/__pycache__/
+.vscode/
