@@ -10,7 +10,7 @@ and version 1.1 was used extensively in the publication
 
 > **Multimodal Microwheel Swarms for Targeting in Three-Dimensional Networks** <br/>
 > C.J. Zimmermann, P. Herson, K.B. Neeves, D.W.M. Marr <br/>
-> Submitted (2021).
+> Scientific Reports (2022).
 
 
 This application uses Qt for GUI, fbs for building executables, and nidaqmx for interfacing with National Instruments function generation and signal aquisition equipment. For more detail, please see the *Review of Scientific Instruments* publication.
